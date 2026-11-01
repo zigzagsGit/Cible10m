@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Cible 10 m",
+  "short_name": "Cible 10 m",
+  "description": "Détection et cotation des impacts sur cible de tir 10 m (carabine et pistolet) à partir de photos.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e8eded",
+  "theme_color": "#0d6b63",
+  "categories": ["sports", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

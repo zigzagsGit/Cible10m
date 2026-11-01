@@ -1,0 +1,1558 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cible 10 m">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Cible 10 m</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : application une colonne, barre d'actions collee en bas, cible au centre de l'ecran */
+:root {
+  --bg: #e8eded;
+  --surface: #ffffff;
+  --sunk: #dde4e3;
+  --fg: #132120;
+  --muted: #5a6b69;
+  --line: #cdd8d7;
+  --accent: #0d6b63;
+  --accent-ink: #ffffff;
+  --hit: #d6342b;
+  --ring: rgba(240, 160, 20, 0.55);
+  --toast-action: #7ddbd0;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1313; --surface: #142020; --sunk: #0f1918; --fg: #e3ecea; --muted: #8fa29f; --line: #253433;
+    --accent: #3cb6a8; --accent-ink: #052120; --hit: #ff5b50; --ring: rgba(255, 184, 60, 0.6); --toast-action: #0b5f58; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1313; --surface: #142020; --sunk: #0f1918; --fg: #e3ecea; --muted: #8fa29f; --line: #253433;
+  --accent: #3cb6a8; --accent-ink: #052120; --hit: #ff5b50; --ring: rgba(255, 184, 60, 0.6); --toast-action: #0b5f58; color-scheme: dark;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+.app { max-width: 560px; margin: 0 auto; }
+button { font: inherit; color: inherit; }
+button:focus-visible, label:focus-within, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* En-tete */
+.top { display: flex; align-items: center; gap: 10px; padding-block: 14px 10px; min-height: 56px; }
+.top h1 { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1; margin: 0; letter-spacing: .01em; flex: 1; min-width: 0; text-wrap: balance; }
+.top h1 small { display: block; font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+.retour { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; width: 40px; height: 40px; font-size: 22px; line-height: 1; cursor: pointer; flex: none; }
+
+/* Accueil */
+.bloc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 14px; }
+.champ { display: grid; gap: 6px; }
+.champ > span { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 12px; padding: 3px; background: var(--sunk); }
+.seg button { background: none; border: 0; border-radius: 9px; padding: 10px 8px; cursor: pointer; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.seg-aide { font-size: 13px; color: var(--muted); margin: 0; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
+.check small { display: block; color: var(--muted); font-size: 12px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 13px 16px; font-weight: 500; cursor: pointer; text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.danger { color: var(--hit); }
+.btn:disabled { opacity: .5; cursor: default; }
+.hist-titre { font-family: var(--display); font-weight: 600; font-size: 22px; margin: 22px 0 8px; }
+.hist { display: grid; gap: 8px; padding-bottom: 28px; }
+.serie { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.serie b { font-weight: 600; }
+.serie .meta { font-size: 12px; color: var(--muted); grid-column: 1; }
+.serie .score { grid-row: 1 / span 2; grid-column: 2; font-family: var(--display); font-weight: 600; font-size: 26px; font-variant-numeric: tabular-nums; }
+.vide { color: var(--muted); font-size: 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 16px; margin: 0; }
+
+/* Seance */
+.cible-box { position: relative; margin: 0 auto; width: min(100%, 62vh); }
+canvas#cible { width: 100%; height: auto; display: block; border-radius: 14px; background: var(--sunk); touch-action: manipulation; cursor: crosshair; }
+.occupe { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 20, 20, .55); color: #fff; border-radius: 14px; font-weight: 500; }
+.scores { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.sc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; min-width: 0; }
+.sc span { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.sc b { display: block; font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sc.grand b { font-size: 40px; color: var(--accent); }
+.msg { margin: 10px 0 0; font-size: 14px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.msg.alerte { border-color: var(--hit); }
+.msg:empty { display: none; }
+.stats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-top: 10px; }
+.stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--body); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+th:first-child, td:first-child { text-align: left; }
+td.dec { font-weight: 500; }
+.retirer { border: 1px solid var(--line); background: var(--bg); color: var(--muted); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; line-height: 1; }
+.retirer:focus-visible { outline: 2px solid var(--accent); }
+.cache-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.tag { font-family: var(--body); font-size: 11px; color: var(--muted); }
+.aide { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.diag { margin-bottom: 28px; }
+.reprise { margin-bottom: 14px; border-color: var(--accent); }
+.reprise p { margin: 0; font-weight: 500; }
+.reprise .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.diag summary { cursor: pointer; font-family: var(--display); font-weight: 600; font-size: 20px; list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.diag summary::-webkit-details-marker { display: none; }
+.diag summary small { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); }
+.diag[open] summary { margin-bottom: 4px; }
+.diag p { margin: 0; font-size: 13px; color: var(--muted); }
+.ligne-email { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.ligne-email input { font: inherit; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); min-width: 0; }
+.ligne-email input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.diag .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.diag .actions .btn { padding: 10px 12px; font-size: 14px; text-decoration: none; }
+a.btn { display: inline-block; color: inherit; }
+a.btn.primary { color: var(--accent-ink); }
+a.btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+.diag-etat { font-family: var(--mono); font-size: 12px; }
+.secours { font-size: 12px; color: var(--muted); }
+.secours code { font-family: var(--mono); user-select: all; color: var(--fg); }
+.secondaires { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-bottom: 20px; }
+.secondaires .btn { padding: 10px 12px; font-size: 14px; }
+.bas { position: sticky; bottom: 0; display: grid; grid-template-columns: 1fr auto; gap: 8px;
+  padding-top: 10px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to bottom, transparent, var(--bg) 22%); margin-top: 10px; }
+.bas .btn.primary { padding: 16px; font-size: 16px; }
+.bas .btn.galerie { padding-inline: 14px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(90px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 14px; border-radius: 12px; display: flex; gap: 14px; align-items: center; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; }
+.toast button { background: none; border: 0; color: var(--toast-action); font-weight: 600; cursor: pointer; padding: 4px; }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.cache { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <!-- ACCUEIL -->
+  <section id="v-accueil">
+    <div class="top"><h1><small>ISSF · 10 m</small>Cible 10 m</h1></div>
+    <div class="bloc reprise" id="reprise" hidden>
+      <p id="reprise-txt"></p>
+      <div class="actions"><button class="btn primary" id="reprendre">Reprendre</button><button class="btn" id="abandonner">Abandonner</button></div>
+    </div>
+    <div class="bloc">
+      <div class="champ"><span>Cible</span>
+        <div class="seg" role="group" aria-label="Type de cible">
+          <button id="c-carabine" aria-pressed="true">Carabine</button>
+          <button id="c-pistolet" aria-pressed="false">Pistolet</button>
+        </div>
+      </div>
+      <div class="champ"><span id="cal-titre">Plomb</span>
+        <div class="seg" role="group" aria-label="Diamètre du plomb">
+          <button id="cal-45" aria-pressed="false">4,5 mm</button>
+          <button id="cal-55" aria-pressed="false">5,5 mm</button>
+        </div>
+      </div>
+      <div class="champ"><span>Prise de vue</span>
+        <div class="seg" role="group" aria-label="Prise de vue">
+          <button id="p-tir" aria-pressed="true">Tir par tir</button>
+          <button id="p-photo" aria-pressed="false">Photo seule</button>
+        </div>
+        <p class="seg-aide" id="aide-mode"></p>
+      </div>
+      <label class="check"><input type="checkbox" id="sim"><span>Cible simulée<small>Pour essayer sans aller au stand : les photos sont générées.</small></span></label>
+      <button class="btn primary" id="commencer">Nouvelle série</button>
+    </div>
+    <h2 class="hist-titre">Séries</h2>
+    <div class="hist" id="hist"></div>
+    <details class="bloc diag" id="diag">
+      <summary>Journal de diagnostic <small id="diag-taille"></small></summary>
+      <p>L'application note ce qu'elle fait (détections, échecs, vos corrections à la main) pour qu'on puisse l'améliorer. Rien n'est envoyé sans votre action : vous choisissez quand transmettre le journal.</p>
+      <div class="champ"><span>Adresse de destination</span>
+        <form class="ligne-email" id="form-email" novalidate>
+          <input type="email" id="email" inputmode="email" autocomplete="email" placeholder="nom@exemple.fr" aria-label="Adresse e-mail de destination du journal">
+          <button class="btn" type="submit" id="email-ok">Enregistrer</button>
+        </form>
+        <p id="email-etat"></p>
+      </div>
+      <label class="check"><input type="checkbox" id="joindre-photo"><span>Joindre la dernière photo analysée<small>Uniquement avec « Envoyer en pièce jointe ». Utile si une cible a été mal lue.</small></span></label>
+      <div class="actions">
+        <a class="btn primary" id="mail-lien" href="#diag">Envoyer par e-mail</a>
+        <button class="btn" id="partager-log" hidden>Envoyer en pièce jointe</button>
+        <button class="btn" id="copier-log">Copier le journal</button>
+        <button class="btn danger" id="effacer-log">Effacer</button>
+      </div>
+      <p class="secours" id="secours" hidden></p>
+      <p class="diag-etat" id="version"></p>
+    </details>
+  </section>
+
+  <!-- SEANCE -->
+  <section id="v-seance" hidden>
+    <div class="top">
+      <button class="retour" id="retour" aria-label="Retour aux séries">‹</button>
+      <h1><small id="s-sous"></small><span id="s-titre">Série</span></h1>
+    </div>
+    <div class="cible-box">
+      <canvas id="cible" width="555" height="555" aria-label="Cible : touchez pour ajouter un impact, touchez un impact pour l'enlever"></canvas>
+      <div class="occupe" id="occupe" hidden>Analyse…</div>
+    </div>
+    <div class="scores">
+      <div class="sc grand"><span id="l-dernier">Dernier</span><b id="v-dernier">–</b></div>
+      <div class="sc"><span>Total</span><b id="v-total">–</b></div>
+      <div class="sc"><span>Tirs</span><b id="v-nb">0</b></div>
+    </div>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    <div class="stats" id="stats"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Déc.</th><th>Pts</th><th>x mm</th><th>y mm</th><th><span class="cache-txt">Retirer</span></th></tr></thead>
+      <tbody id="lignes"></tbody>
+    </table></div>
+    <p class="aide" id="aide-edition">Touchez la cible pour ajouter un impact oublié. Touchez un impact pour l'enlever.</p>
+    <div class="secondaires" id="secondaires">
+      <button class="btn" id="passer" hidden>Pas de photo avant</button>
+      <button class="btn" id="annuler">Annuler le dernier tir</button>
+      <button class="btn" id="nouvelle-cible">Changer de cible</button>
+      <button class="btn" id="exporter">Exporter (CSV)</button>
+      <button class="btn" id="signaler">Signaler un problème</button>
+      <button class="btn danger" id="supprimer">Supprimer la série</button>
+    </div>
+    <div class="confirm" id="confirm" hidden>Supprimer cette série ? <button class="btn danger" id="conf-oui">Supprimer</button><button class="btn" id="conf-non">Garder</button></div>
+    <div class="bas" id="bas">
+      <button class="btn primary" id="action">Photographier</button>
+      <button class="btn galerie" id="galerie" aria-label="Choisir une photo dans la galerie">Galerie</button>
+    </div>
+  </section>
+  <input type="file" accept="image/*" capture="environment" id="in-camera" class="cache" tabindex="-1" aria-hidden="true">
+  <input type="file" accept="image/*" id="in-galerie" class="cache" tabindex="-1" aria-hidden="true">
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toast-txt"></span><button id="toast-btn">Annuler</button></div>
+
+<script id="core">
+/* ===== Coeur : simulation et analyse (sans DOM, testable hors navigateur) ===== */
+var CFG = {
+  /* rp : rayon du plomb (mm). L'application le remplace par le calibre choisi pour chaque arme. */
+  carabine: { nom: "Carabine", noir: 30.5, r10: 0.25, pas: 2.5, k: 10, scale: 9, card: 80, lw: 0.15, rp: 2.25 },
+  pistolet: { nom: "Pistolet", noir: 59.5, r10: 5.75, pas: 8, k: 4, scale: 4.2, card: 170, lw: 0.25, rp: 2.25 }
+};
+var W = 900;
+var DIAG = {}; /* mesures internes de la derniere analyse, pour le journal */
+function r2(v) { return Math.round(v * 100) / 100; }
+function rz(c, z) { return c.r10 + (10 - z) * c.pas; }
+function coter(c, d) {
+  var e = 0;
+  for (var z = 10; z >= 1; z--) if (d - c.rp <= rz(c, z) + 1e-9) { e = z; break; }
+  if (!e) return [0, 0];
+  var dec = 11 - (d - c.rp - c.r10 + c.pas) / c.pas;
+  return [e, Math.floor(Math.min(dec, 10.9) * 10 + 1e-9) / 10];
+}
+function prng(seed) {
+  var a = seed >>> 0;
+  return function () { a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function gauss(r) { var u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+
+/* --- Prise de vue simulee --- */
+function nouvelleGeo(cfg, seed) {
+  var r = prng(seed * 7919 + 13);
+  var th = (r() - 0.5) * 0.3, tilt = 0.03 + r() * 0.05, sh = (r() - 0.5) * 0.06, s = cfg.scale;
+  var co = Math.cos(th), si = Math.sin(th);
+  return {
+    a: co * s, b: si * s, c: co * sh * s - si * s * (1 - tilt), d: si * sh * s + co * s * (1 - tilt),
+    e: W / 2 + (r() - 0.5) * 50, f: W / 2 + (r() - 0.5) * 50, light: r() * Math.PI * 2, seed: seed,
+    p1: (r() - 0.5) * 2e-4, p2: (r() - 0.5) * 2e-4 /* cible pas tout a fait face a l'objectif */
+  };
+}
+function mmVersPhoto(g, x, y) { return [g.a * x + g.c * (-y) + g.e, g.b * x + g.d * (-y) + g.f]; }
+function photoVersMm(g, X, Y) {
+  var det = g.a * g.d - g.b * g.c, u = X - g.e, v = Y - g.f;
+  return [(g.d * u - g.c * v) / det, -(-g.b * u + g.a * v) / det];
+}
+function dessinerCible(ctx, cfg, g, tirs) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "rgb(84,88,92)"; ctx.fillRect(0, 0, W, W);
+  ctx.setTransform(g.a, g.b, g.c, g.d, g.e, g.f);
+  var h = cfg.card / 2, rn = cfg.noir / 2;
+  ctx.fillStyle = "rgb(238,238,236)"; ctx.fillRect(-h, -h, cfg.card, cfg.card);
+  ctx.fillStyle = "rgb(22,22,22)"; ctx.beginPath(); ctx.arc(0, 0, rn, 0, 2 * Math.PI); ctx.fill();
+  ctx.lineWidth = cfg.lw;
+  for (var z = 1; z <= 10; z++) {
+    var r = rz(cfg, z); if (Math.abs(r - rn) < 0.01) continue;
+    ctx.strokeStyle = r < rn ? "rgb(225,225,225)" : "rgb(30,30,30)";
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, 2 * Math.PI); ctx.stroke();
+  }
+  if (cfg.r10 < 1) { ctx.fillStyle = "rgb(235,235,235)"; ctx.beginPath(); ctx.arc(0, 0, cfg.r10, 0, 2 * Math.PI); ctx.fill(); }
+  else { ctx.strokeStyle = "rgb(225,225,225)"; ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, 2 * Math.PI); ctx.stroke(); }
+  ctx.fillStyle = "rgb(30,30,30)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.font = "600 " + (cfg.pas * 0.55).toFixed(2) + "px sans-serif";
+  for (z = 1; z <= 9; z++) {
+    if (rz(cfg, z + 1) < rn - 0.01) break;
+    var m = (rz(cfg, z) + rz(cfg, z + 1)) / 2;
+    ctx.fillText(String(z), m, 0); ctx.fillText(String(z), -m, 0); ctx.fillText(String(z), 0, m); ctx.fillText(String(z), 0, -m);
+  }
+  for (var i = 0; i < tirs.length; i++) {
+    var t = tirs[i], rr = prng(t.id * 31 + 7);
+    if (t.gommette) {
+      /* gommette ronde de 8 mm, d'une teinte proche du fond qu'elle recouvre */
+      var noire = Math.hypot(t.x, t.y) < rn, v2 = noire ? 30 + Math.floor(rr() * 10) : 226 + Math.floor(rr() * 8);
+      ctx.fillStyle = "rgb(" + v2 + "," + v2 + "," + v2 + ")";
+      ctx.beginPath(); ctx.arc(t.x, -t.y, 4, 0, 2 * Math.PI); ctx.fill();
+      continue;
+    }
+    var v = 60 + Math.floor(rr() * 18);
+    ctx.fillStyle = "rgb(" + v + "," + v + "," + (v + 2) + ")";
+    ctx.beginPath();
+    for (var a = 0; a < 36; a++) {
+      var an = a / 36 * Math.PI * 2, rad = cfg.rp * (1 + gauss(rr) * 0.035);
+      var px = t.x + rad * Math.cos(an), py = -t.y + rad * Math.sin(an);
+      if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+/* Simulation d'une cible inclinee (perspective) : homographie centree sur la cible */
+function perspective(gris, d, g) {
+  var out = new Float32Array(W * W), cx = g.e, cy = g.f;
+  for (var y = 0, p = 0; y < W; y++) for (var x = 0; x < W; x++, p++) {
+    var X = x - cx, Y = y - cy, den = 1 - g.p1 * X - g.p2 * Y, u = X / den + cx, v = Y / den + cy;
+    var x0 = Math.floor(u), y0 = Math.floor(v), fx = u - x0, fy = v - y0, val = 84;
+    if (x0 >= 0 && y0 >= 0 && x0 < W - 1 && y0 < W - 1) { var q = y0 * W + x0; val = (gris[q] * (1 - fx) + gris[q + 1] * fx) * (1 - fy) + (gris[q + W] * (1 - fx) + gris[q + W + 1] * fx) * fy; }
+    out[p] = val; d[p * 4] = d[p * 4 + 1] = d[p * 4 + 2] = val;
+  }
+  return out;
+}
+/* Rendu "photo" : cible + eclairage inegal + bruit, renvoie le canvas et les niveaux de gris */
+function photographier(cfg, g, tirs, seedBruit) {
+  var cv = makeCanvas(W, W), ctx = cv.getContext("2d");
+  dessinerCible(ctx, cfg, g, tirs);
+  var img = ctx.getImageData(0, 0, W, W), d = img.data, gris = new Float32Array(W * W);
+  var r = prng(seedBruit), co = Math.cos(g.light), si = Math.sin(g.light);
+  for (var y = 0, p = 0; y < W; y++) for (var x = 0; x < W; x++, p++) {
+    var l = 0.84 + 0.24 * (((x - W / 2) * co + (y - W / 2) * si) / W + 0.5);
+    var v = d[p * 4] * l + (r() + r() + r() - 1.5) * 7;
+    v = v < 0 ? 0 : v > 255 ? 255 : v;
+    gris[p] = v; d[p * 4] = d[p * 4 + 1] = d[p * 4 + 2] = v;
+  }
+  if (g.p1 || g.p2) gris = perspective(gris, d, g);
+  ctx.putImageData(img, 0, 0);
+  return { canvas: cv, gris: gris, w: W, h: W };
+}
+
+/* --- Outils d'image --- */
+function otsu(g) {
+  var h = new Float64Array(256), n = g.length, i;
+  for (i = 0; i < n; i++) h[g[i] | 0]++;
+  var sum = 0; for (i = 0; i < 256; i++) sum += i * h[i];
+  var wB = 0, sB = 0, best = 0, t = 128;
+  for (i = 0; i < 256; i++) {
+    wB += h[i]; if (!wB) continue; var wF = n - wB; if (!wF) break;
+    sB += i * h[i]; var mB = sB / wB, mF = (sum - sB) / wF, b = wB * wF * (mB - mF) * (mB - mF);
+    if (b > best) { best = b; t = i; }
+  }
+  return t;
+}
+function composantes(m, w, h) {
+  var lab = new Int32Array(w * h), st = new Int32Array(w * h), comps = [], n = 0;
+  for (var s = 0; s < w * h; s++) {
+    if (!m[s] || lab[s]) continue;
+    n++; var c = { id: n, aire: 0, sx: 0, sy: 0, x0: w, x1: 0, y0: h, y1: 0, bord: false }, top = 0;
+    st[top++] = s; lab[s] = n;
+    while (top) {
+      var p = st[--top], x = p % w, y = (p - x) / w;
+      c.aire++; c.sx += x; c.sy += y;
+      if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y;
+      if (x === 0 || y === 0 || x === w - 1 || y === h - 1) c.bord = true;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+        var xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+        var q = yy * w + xx; if (m[q] && !lab[q]) { lab[q] = n; st[top++] = q; }
+      }
+    }
+    comps.push(c);
+  }
+  return { lab: lab, comps: comps };
+}
+function filtre(src, N, r, isMax) {
+  var tmp = new Float32Array(N * N), out = new Float32Array(N * N), x, y, i, v, b;
+  for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+    b = isMax ? -1e9 : 1e9;
+    for (i = Math.max(0, x - r); i <= Math.min(N - 1, x + r); i++) { v = src[y * N + i]; if (isMax ? v > b : v < b) b = v; }
+    tmp[y * N + x] = b;
+  }
+  for (x = 0; x < N; x++) for (y = 0; y < N; y++) {
+    b = isMax ? -1e9 : 1e9;
+    for (i = Math.max(0, y - r); i <= Math.min(N - 1, y + r); i++) { v = tmp[i * N + x]; if (isMax ? v > b : v < b) b = v; }
+    out[y * N + x] = b;
+  }
+  return out;
+}
+/* Ouverture binaire (carre 2r+1) sur une image rectangulaire, en passes separables */
+function ouvertureRect(m, w, h, r) {
+  var passe = function (src, isMax) {
+    var tmp = new Uint8Array(w * h), out = new Uint8Array(w * h), x, y, i, v;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      v = isMax ? 0 : 1;
+      for (i = Math.max(0, x - r); i <= Math.min(w - 1, x + r); i++) { var s = src[y * w + i]; if (isMax ? s > v : s < v) { v = s; if (isMax ? v === 1 : v === 0) break; } }
+      tmp[y * w + x] = v;
+    }
+    for (x = 0; x < w; x++) for (y = 0; y < h; y++) {
+      v = isMax ? 0 : 1;
+      for (i = Math.max(0, y - r); i <= Math.min(h - 1, y + r); i++) { var s2 = tmp[i * w + x]; if (isMax ? s2 > v : s2 < v) { v = s2; if (isMax ? v === 1 : v === 0) break; } }
+      out[y * w + x] = v;
+    }
+    return out;
+  };
+  return passe(passe(m, false), true);
+}
+function ouverture(a, N, r) { return filtre(filtre(a, N, r, false), N, r, true); }
+function fermeture(a, N, r) { return filtre(filtre(a, N, r, true), N, r, false); }
+function moyenneLocale(img, masque, N, r) {
+  var S = new Float64Array((N + 1) * (N + 1)), C = new Float64Array((N + 1) * (N + 1)), x, y;
+  for (y = 0; y < N; y++) {
+    var rs = 0, rc = 0;
+    for (x = 0; x < N; x++) {
+      var mk = masque[y * N + x] ? 1 : 0; rs += img[y * N + x] * mk; rc += mk;
+      S[(y + 1) * (N + 1) + x + 1] = S[y * (N + 1) + x + 1] + rs; C[(y + 1) * (N + 1) + x + 1] = C[y * (N + 1) + x + 1] + rc;
+    }
+  }
+  var out = new Float32Array(N * N);
+  for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+    var x0 = Math.max(0, x - r), x1 = Math.min(N, x + r + 1), y0 = Math.max(0, y - r), y1 = Math.min(N, y + r + 1);
+    var s = S[y1 * (N + 1) + x1] - S[y0 * (N + 1) + x1] - S[y1 * (N + 1) + x0] + S[y0 * (N + 1) + x0];
+    var c = C[y1 * (N + 1) + x1] - C[y0 * (N + 1) + x1] - C[y1 * (N + 1) + x0] + C[y0 * (N + 1) + x0];
+    out[y * N + x] = c > 0 ? s / c : 0;
+  }
+  return out;
+}
+function mediane(arr) { if (!arr.length) return 0; arr.sort(function (a, b) { return a - b; }); return arr[arr.length >> 1]; }
+function percentile(a, p) { var h = new Float64Array(256), i, n = a.length, acc = 0; for (i = 0; i < n; i++) h[Math.max(0, Math.min(255, a[i] | 0))]++; for (i = 0; i < 256; i++) { acc += h[i]; if (acc >= p * n) return i; } return 255; }
+/* Transformee de distance euclidienne exacte (Felzenszwalb) : distance au carre au plus proche pixel "source" */
+function dt1(f, n, d, v, z) {
+  var k = 0; v[0] = 0; z[0] = -1e30; z[1] = 1e30;
+  for (var q = 1; q < n; q++) {
+    var s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+    k++; v[k] = q; z[k] = s; z[k + 1] = 1e30;
+  }
+  k = 0;
+  for (q = 0; q < n; q++) { while (z[k + 1] < q) k++; d[q] = (q - v[k]) * (q - v[k]) + f[v[k]]; }
+}
+function edt(source, N) {
+  var D = new Float64Array(N * N), f = new Float64Array(N), d = new Float64Array(N), v = new Int32Array(N), z = new Float64Array(N + 1), x, y;
+  for (x = 0; x < N; x++) { for (y = 0; y < N; y++) f[y] = source[y * N + x] ? 0 : 1e20; dt1(f, N, d, v, z); for (y = 0; y < N; y++) D[y * N + x] = d[y]; }
+  for (y = 0; y < N; y++) { for (x = 0; x < N; x++) f[x] = D[y * N + x]; dt1(f, N, d, v, z); for (x = 0; x < N; x++) D[y * N + x] = d[x]; }
+  return D;
+}
+function ouvertureDisque(m, N, r) {
+  var fond = new Uint8Array(N * N), i;
+  for (i = 0; i < N * N; i++) fond[i] = m[i] ? 0 : 1;
+  var d1 = edt(fond, N), er = new Uint8Array(N * N);
+  for (i = 0; i < N * N; i++) er[i] = m[i] && d1[i] > r * r ? 1 : 0;
+  var d2 = edt(er, N), out = new Uint8Array(N * N);
+  for (i = 0; i < N * N; i++) out[i] = d2[i] <= r * r ? 1 : 0;
+  return out;
+}
+
+/* --- Matrices 2x2 [a,b,c,d] = [[a,b],[c,d]] --- */
+function mul(A, B) { return [A[0] * B[0] + A[1] * B[2], A[0] * B[1] + A[1] * B[3], A[2] * B[0] + A[3] * B[2], A[2] * B[1] + A[3] * B[3]]; }
+function inv(A) { var det = A[0] * A[3] - A[1] * A[2]; return [A[3] / det, -A[1] / det, -A[2] / det, A[0] / det]; }
+function sqrtSym(M) { var s = Math.sqrt(M[0] * M[3] - M[1] * M[2]), t = Math.sqrt(M[0] + M[3] + 2 * s); return [(M[0] + s) / t, M[1] / t, M[2] / t, (M[3] + s) / t]; }
+function polaire(Wm) { return sqrtSym(mul([Wm[0], Wm[2], Wm[1], Wm[3]], Wm)); }
+function resoudre(A, b) {
+  var n = b.length, i, j, k;
+  for (i = 0; i < n; i++) {
+    var p = i; for (j = i + 1; j < n; j++) if (Math.abs(A[j][i]) > Math.abs(A[p][i])) p = j;
+    var t = A[i]; A[i] = A[p]; A[p] = t; var tb = b[i]; b[i] = b[p]; b[p] = tb;
+    for (j = i + 1; j < n; j++) { var f = A[j][i] / A[i][i]; for (k = i; k < n; k++) A[j][k] -= f * A[i][k]; b[j] -= f * b[i]; }
+  }
+  var x = new Array(n);
+  for (i = n - 1; i >= 0; i--) { var s = b[i]; for (j = i + 1; j < n; j++) s -= A[i][j] * x[j]; x[i] = s / A[i][i]; }
+  return x;
+}
+
+/* --- 1. Visuel noir et ellipse --- */
+function trouverVisuel(img) {
+  var g = img.gris, w = img.w, h = img.h, t = otsu(g), m = new Uint8Array(w * h), i;
+  for (i = 0; i < w * h; i++) m[i] = g[i] < t ? 1 : 0;
+  /* ouverture : coupe les fines lignes de zones qu'une gommette noire ou un trou relie au visuel */
+  m = ouvertureRect(m, w, h, Math.max(2, Math.round(Math.min(w, h) / 250)));
+  var cc = composantes(m, w, h), best = null;
+  cc.comps.forEach(function (c) {
+    if (c.bord || c.aire < 0.003 * w * h) return;
+    var bw = c.x1 - c.x0 + 1, bh = c.y1 - c.y0 + 1, rem = c.aire / (bw * bh), asp = bw / bh;
+    if (rem < 0.5 || rem > 0.95 || asp < 0.5 || asp > 2) return;
+    if (!best || c.aire > best.aire) best = c;
+  });
+  DIAG.visuel = { otsu: t, composantes: cc.comps.length, trouve: !!best };
+  if (best) { DIAG.visuel.aire_pct = r2(best.aire / (w * h) * 100); DIAG.visuel.remplissage = r2(best.aire / ((best.x1 - best.x0 + 1) * (best.y1 - best.y0 + 1))); DIAG.visuel.l_sur_h = r2((best.x1 - best.x0 + 1) / (best.y1 - best.y0 + 1)); }
+  if (!best) throw new Error("Visuel noir introuvable. Cadrez la cible en entier, sans reflet sur le noir.");
+  var lab = cc.lab, id = best.id, pts = [], x, y;
+  var n = 0, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0;
+  for (y = best.y0; y <= best.y1; y++) {
+    var a = -1, b = -1;
+    for (x = best.x0; x <= best.x1; x++) if (lab[y * w + x] === id) { if (a < 0) a = x; b = x; }
+    if (a < 0) continue;
+    pts.push([a - 0.5, y], [b + 0.5, y]);
+    for (x = a; x <= b; x++) { n++; sx += x; sy += y; sxx += x * x; syy += y * y; sxy += x * y; }
+  }
+  for (x = best.x0; x <= best.x1; x++) {
+    var a2 = -1, b2 = -1;
+    for (y = best.y0; y <= best.y1; y++) if (lab[y * w + x] === id) { if (a2 < 0) a2 = y; b2 = y; }
+    if (a2 >= 0) pts.push([x, a2 - 0.5], [x, b2 + 0.5]);
+  }
+  var c = [sx / n, sy / n];
+  var cov = [sxx / n - c[0] * c[0], sxy / n - c[0] * c[1], sxy / n - c[0] * c[1], syy / n - c[1] * c[1]];
+  var Wm = inv(sqrtSym(cov)); Wm = [Wm[0] * 0.5, Wm[1] * 0.5, Wm[2] * 0.5, Wm[3] * 0.5];
+  /* Affinage robuste : on ajuste une conique sur les points du bord, en ecartant ceux deformes par un trou */
+  /* tolerance qui se resserre : un premier ajustement biaise (gommette noire qui deborde du visuel,
+     trou a cheval sur le bord) ne doit pas faire rejeter les bons points du bord */
+  var tolerances = [0.15, 0.08, 0.04, 0.025, 0.02, 0.02];
+  for (var it = 0; it < tolerances.length; it++) {
+    var us = pts.map(function (p) { var dx = p[0] - c[0], dy = p[1] - c[1]; return [Wm[0] * dx + Wm[1] * dy, Wm[2] * dx + Wm[3] * dy]; });
+    var med = mediane(us.map(function (u) { return Math.hypot(u[0], u[1]); })), tol = tolerances[it];
+    var garde = us.filter(function (u) { return Math.abs(Math.hypot(u[0], u[1]) - med) < tol * med; });
+    if (garde.length < 30) break;
+    var A = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], B = [0, 0, 0, 0, 0];
+    garde.forEach(function (u) {
+      var r = [u[0] * u[0], u[0] * u[1], u[1] * u[1], u[0], u[1]];
+      for (var i2 = 0; i2 < 5; i2++) { B[i2] += r[i2]; for (var j2 = 0; j2 < 5; j2++) A[i2][j2] += r[i2] * r[j2]; }
+    });
+    var s = resoudre(A, B), Q = [s[0], s[1] / 2, s[1] / 2, s[2]];
+    if (!(Q[0] > 0 && Q[0] * Q[3] - Q[1] * Q[2] > 0)) break;
+    var Qi = inv(Q), uc = [-0.5 * (Qi[0] * s[3] + Qi[1] * s[4]), -0.5 * (Qi[2] * s[3] + Qi[3] * s[4])];
+    var k0 = 1 + uc[0] * (Q[0] * uc[0] + Q[1] * uc[1]) + uc[1] * (Q[2] * uc[0] + Q[3] * uc[1]);
+    var Qn = [Q[0] / k0, Q[1] / k0, Q[2] / k0, Q[3] / k0], Wi = inv(Wm);
+    c = [c[0] + Wi[0] * uc[0] + Wi[1] * uc[1], c[1] + Wi[2] * uc[0] + Wi[3] * uc[1]];
+    Wm = polaire(mul(sqrtSym(Qn), Wm));
+  }
+  DIAG.visuel.centre_px = [r2(c[0]), r2(c[1])]; DIAG.visuel.points_bord = pts.length;
+  return { c: c, W: Wm };
+}
+
+/* --- 2. Redressement : la cible devient un cercle, echelle k px/mm --- */
+function redresser(img, geo, cfg) {
+  var k = cfg.k, N = Math.round(2 * (rz(cfg, 1) + 5) * k), R = cfg.noir / 2 * k, Wi = inv(geo.W);
+  var out = new Float32Array(N * N), g = img.gris, w = img.w, h = img.h;
+  for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+    var u = (i - N / 2) / R, v = (j - N / 2) / R;
+    var x = geo.c[0] + Wi[0] * u + Wi[1] * v, y = geo.c[1] + Wi[2] * u + Wi[3] * v;
+    var x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+    if (x0 < 0 || y0 < 0 || x0 >= w - 1 || y0 >= h - 1) { out[j * N + i] = 128; continue; }
+    var p = y0 * w + x0;
+    out[j * N + i] = (g[p] * (1 - fx) + g[p + 1] * fx) * (1 - fy) + (g[p + w] * (1 - fx) + g[p + w + 1] * fx) * fy;
+  }
+  return { img: out, N: N };
+}
+
+/* --- 3. Detection des trous --- */
+function masqueSimple(R, N, cfg) {
+  var k = cfg.k, c = N / 2, rn = cfg.noir / 2 * k, marge = Math.max(2, 0.5 * k), i, x, y;
+  var dansN = new Uint8Array(N * N), dansB = new Uint8Array(N * N), rr = new Float32Array(N * N);
+  for (y = 0; y < N; y++) for (x = 0; x < N; x++) { i = y * N + x; rr[i] = Math.hypot(x - c, y - c); dansN[i] = rr[i] < rn - marge; dansB[i] = rr[i] > rn + marge; }
+  var r1 = Math.max(1, Math.round(0.6 * k));
+  var noirL = ouverture(R, N, r1), blancL = fermeture(R, N, r1);
+  var fB = moyenneLocale(blancL, dansB, N, Math.round(5 * k));
+  var vb = [], vn = [];
+  for (i = 0; i < N * N; i++) { if (Math.abs(rr[i] - (rn + 3 * k)) < k) vb.push(blancL[i]); else if (rr[i] < rn - 3 * k) vn.push(noirL[i]); }
+  var nivN = mediane(vn), contraste = Math.max(30, mediane(vb) - nivN), m = new Float32Array(N * N);
+  /* Noir : niveau global (un groupement serre fausserait une moyenne locale). Blanc : niveau local (eclairage) */
+  for (i = 0; i < N * N; i++) m[i] = (dansN[i] && noirL[i] - nivN > 0.12 * contraste) || (dansB[i] && fB[i] - blancL[i] > 0.25 * contraste) ? 1 : 0;
+  return fermeture(m, N, Math.round(marge) + 1);
+}
+function masqueChange(A, B, N, s) {
+  var m = new Uint8Array(N * N);
+  for (var y = 1; y < N - 1; y++) for (var x = 1; x < N - 1; x++) {
+    var t = 0;
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var q = (y + dy) * N + x + dx; t += Math.abs(A[q] - B[q]); }
+    m[y * N + x] = t / 9 > s ? 1 : 0;
+  }
+  return m;
+}
+function kmeans(xs, ys, n) {
+  var c = [], i, j, mx = 0, my = 0;
+  for (i = 0; i < xs.length; i++) { mx += xs[i]; my += ys[i]; } mx /= xs.length; my /= ys.length;
+  var ref = [[mx, my]];
+  for (j = 0; j < n; j++) {
+    var bi = 0, bd = -1;
+    for (i = 0; i < xs.length; i++) {
+      var dm = 1e18; (j === 0 ? ref : c).forEach(function (p) { var dd = (xs[i] - p[0]) ** 2 + (ys[i] - p[1]) ** 2; if (dd < dm) dm = dd; });
+      if (dm > bd) { bd = dm; bi = i; }
+    }
+    c.push([xs[bi], ys[bi]]);
+  }
+  for (var it = 0; it < 40; it++) {
+    var s = c.map(function () { return [0, 0, 0]; });
+    for (i = 0; i < xs.length; i++) {
+      var b = 0, d = 1e18;
+      for (j = 0; j < n; j++) { var dd = (xs[i] - c[j][0]) ** 2 + (ys[i] - c[j][1]) ** 2; if (dd < d) { d = dd; b = j; } }
+      s[b][0] += xs[i]; s[b][1] += ys[i]; s[b][2]++;
+    }
+    c = s.map(function (q, jj) { return q[2] ? [q[0] / q[2], q[1] / q[2]] : c[jj]; });
+  }
+  return c;
+}
+/* Trou groupe : on cherche le plus petit nombre de disques de 4,5 mm dont la reunion
+   reproduit la forme du trou (tout le trou couvert, presque rien en dehors). */
+function ajusterDisques(c, lab, N, r, n, libre) {
+  var xs = [], ys = [], x, y, i, j;
+  for (y = c.y0; y <= c.y1; y++) for (x = c.x0; x <= c.x1; x++) if (lab[y * N + x] === c.id) { xs.push(x); ys.push(y); }
+  var centres = n === 1 ? [[c.sx / c.aire, c.sy / c.aire]] : kmeans(xs, ys, n), off = [], ri = Math.ceil(r);
+  for (y = -ri; y <= ri; y++) for (x = -ri; x <= ri; x++) if (x * x + y * y <= r * r) off.push(x, y);
+  var dans = function (px, py) { return px >= 0 && py >= 0 && px < N && py < N && lab[py * N + px] === c.id; };
+  for (var it = 0; it < 3; it++) {
+    /* chaque pixel du trou est attribue au centre le plus proche, puis chaque disque se recale */
+    var bw = c.x1 - c.x0 + 1, proprio = new Int8Array(bw * (c.y1 - c.y0 + 1)).fill(-1);
+    for (i = 0; i < xs.length; i++) {
+      var b = 0, bd = 1e18;
+      for (j = 0; j < n; j++) { var dd = (xs[i] - centres[j][0]) ** 2 + (ys[i] - centres[j][1]) ** 2; if (dd < bd) { bd = dd; b = j; } }
+      proprio[(ys[i] - c.y0) * bw + xs[i] - c.x0] = b;
+    }
+    centres = centres.map(function (ce, jj) {
+      var best = -1e18, bx = ce[0], by = ce[1];
+      for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++) {
+        var cx = Math.round(ce[0]) + dx, cy = Math.round(ce[1]) + dy, sc = 0;
+        for (var q = 0; q < off.length; q += 2) {
+          var px = cx + off[q], py = cy + off[q + 1];
+          if (!dans(px, py)) sc -= libre && px >= 0 && py >= 0 && px < N && py < N && libre[py * N + px] ? 0 : 2; else if (proprio[(py - c.y0) * bw + px - c.x0] === jj) sc += 1;
+        }
+        if (sc > best) { best = sc; bx = cx; by = cy; }
+      }
+      return [bx, by];
+    });
+  }
+  /* qualite : part du trou couverte, part des disques qui deborde */
+  var couvert = new Uint8Array(N * N), dehors = 0, total = 0, cov = 0;
+  centres.forEach(function (ce) {
+    for (var q = 0; q < off.length; q += 2) {
+      var px = ce[0] + off[q], py = ce[1] + off[q + 1];
+      if (dans(px, py)) { couvert[py * N + px] = 1; total++; }
+      else if (!(libre && px >= 0 && py >= 0 && px < N && py < N && libre[py * N + px])) { dehors++; total++; }
+    }
+  });
+  for (i = 0; i < xs.length; i++) cov += couvert[ys[i] * N + xs[i]];
+  return { centres: centres, couverture: cov / xs.length, debord: dehors / total };
+}
+function extraireImpacts(m, N, cfg, libre) {
+  var k = cfg.k, mf = fermeture(m, N, 2), b = new Uint8Array(N * N), i;
+  for (i = 0; i < N * N; i++) b[i] = mf[i] > 0.5 ? 1 : 0;
+  b = ouvertureDisque(b, N, 1.5 * k); /* efface lignes et chiffres : seul un trou de 4,5 mm y resiste */
+  var cc = composantes(b, N, N), r = cfg.rp * k, aireP = Math.PI * r * r, imp = [];
+  DIAG.trous = [];
+  cc.comps.forEach(function (c) {
+    if (c.aire < 0.35 * aireP || c.aire > 12 * aireP) return;
+    /* Trou hors des zones (bord de carte, fond) : inutile d'ajuster */
+    if (Math.hypot((c.sx / c.aire - N / 2) / k, (c.sy / c.aire - N / 2) / k) - cfg.rp > rz(cfg, 1) + 3 + c.aire / aireP * cfg.rp) return;
+    var choix = null;
+    if (c.aire <= 1.15 * aireP) choix = { centres: [[c.sx / c.aire, c.sy / c.aire]] };
+    else {
+      /* Un plomb de plus n'est retenu que s'il explique au moins 5 % du trou en plus */
+      var nmax = Math.min(12, Math.ceil(c.aire / (0.45 * aireP)));
+      choix = ajusterDisques(c, cc.lab, N, r, 1, libre);
+      for (var n = 2; n <= nmax; n++) {
+        var a = ajusterDisques(c, cc.lab, N, r, n, libre);
+        if (a.couverture - choix.couverture < 0.05) break;
+        choix = a;
+      }
+      /* deux centres a moins de 0,6 mm : impossible a distinguer sur la photo, on compte un seul plomb */
+      var uniques = [];
+      choix.centres.forEach(function (p) { if (!uniques.some(function (q) { return Math.hypot(p[0] - q[0], p[1] - q[1]) < 0.6 * k; })) uniques.push(p); });
+      choix.centres = uniques;
+    }
+    DIAG.trous.push({ aire: r2(c.aire / aireP), plombs: choix.centres.length, couverture: choix.couverture === undefined ? null : r2(choix.couverture) });
+    var groupe = choix.centres.length > 1;
+    choix.centres.forEach(function (p) {
+      var xm = (p[0] - N / 2) / k, ym = -(p[1] - N / 2) / k, d = Math.hypot(xm, ym);
+      if (d - cfg.rp > rz(cfg, 1) + 0.5) return;  /* au-dela de la zone 1 : bord d'image, pas un impact cotable */
+      var sc = coter(cfg, d);
+      imp.push({ x: xm, y: ym, d: d, pts: sc[0], dec: sc[1], groupe: groupe, px: p });
+    });
+  });
+  imp.sort(function (a, b) { return a.d - b.d; });
+  return imp;
+}
+
+/* --- Pipeline complet --- */
+function analyserPhoto(photo, cfg) {
+  var geo = trouverVisuel(photo), ra = redresser(photo, geo, cfg);
+  return { geo: geo, rect: ra, impacts: extraireImpacts(masqueSimple(ra.img, ra.N, cfg), ra.N, cfg) };
+}
+/* Position reelle d'un tir dans le repere redresse (pour mesurer l'erreur de toute la chaine) */
+function vraiDansRedresse(res, g, cfg, t) {
+  var P = mmVersPhoto(g, t.x, t.y), R = cfg.noir / 2 * cfg.k, Wm = res.geo.W;
+  var dx = P[0] - res.geo.c[0], dy = P[1] - res.geo.c[1];
+  var u = Wm[0] * dx + Wm[1] * dy, v = Wm[2] * dx + Wm[3] * dy;
+  return [res.rect.N / 2 + u * R, res.rect.N / 2 + v * R];
+}
+function geoBouge(g, r, niveau) {
+  var n = niveau === undefined ? 1 : niveau;
+  var a = gauss(r) * 0.03 * n, s = 1 + gauss(r) * 0.015 * n, co = Math.cos(a) * s, si = Math.sin(a) * s, C = W / 2;
+  var dx = gauss(r) * 8 * n, dy = gauss(r) * 8 * n, sk = 1 + gauss(r) * 0.01 * n;
+  var J = [co * sk, -si, si * sk, co];
+  return {
+    a: J[0] * g.a + J[1] * g.b, b: J[2] * g.a + J[3] * g.b, c: J[0] * g.c + J[1] * g.d, d: J[2] * g.c + J[3] * g.d,
+    e: J[0] * (g.e - C) + J[1] * (g.f - C) + C + dx, f: J[2] * (g.e - C) + J[3] * (g.f - C) + C + dy, light: g.light + gauss(r) * 0.3 * n, seed: g.seed,
+    /* la cible peut aussi pivoter un peu sur son support : perspective qui change d'une photo a l'autre */
+    p1: (g.p1 || 0) + gauss(r) * 4e-5 * n, p2: (g.p2 || 0) + gauss(r) * 4e-5 * n
+  };
+}
+
+/* ===== Complements pour l'application : prise a la main, rotation, niveaux ===== */
+function redresserRot(img, geo, cfg, rot, H) {
+  var k = cfg.k, N = Math.round(2 * (rz(cfg, 1) + 5) * k), R = cfg.noir / 2 * k, Wi = inv(geo.W), S = N / 2;
+  var co = Math.cos(rot || 0), si = Math.sin(rot || 0);
+  var out = new Float32Array(N * N), g = img.gris, w = img.w, h = img.h;
+  for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+    var ii = i, jj = j;
+    if (H) { /* recalage fin : homographie en coordonnees centrees reduites */
+      var X = (i - S) / S, Y = (j - S) / S, wh = H[6] * X + H[7] * Y + H[8];
+      ii = (H[0] * X + H[1] * Y + H[2]) / wh * S + S; jj = (H[3] * X + H[4] * Y + H[5]) / wh * S + S;
+    }
+    var u0 = (ii - S) / R, v0 = (jj - S) / R, u = co * u0 - si * v0, v = si * u0 + co * v0;
+    var x = geo.c[0] + Wi[0] * u + Wi[1] * v, y = geo.c[1] + Wi[2] * u + Wi[3] * v;
+    var x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+    if (x0 < 0 || y0 < 0 || x0 >= w - 1 || y0 >= h - 1) { out[j * N + i] = 128; continue; }
+    var p = y0 * w + x0;
+    out[j * N + i] = (g[p] * (1 - fx) + g[p + 1] * fx) * (1 - fy) + (g[p + w] * (1 - fx) + g[p + w + 1] * fx) * fy;
+  }
+  return { img: out, N: N };
+}
+/* Ramene noir et blanc a des niveaux fixes : deux photos prises avec une exposition differente deviennent comparables */
+function normaliser(R, N, cfg) {
+  var k = cfg.k, c = N / 2, rn = cfg.noir / 2 * k, vb = [], vn = [];
+  for (var y = 0; y < N; y += 2) for (var x = 0; x < N; x += 2) {
+    var r = Math.hypot(x - c, y - c), v = R[y * N + x];
+    if (r > rn + 0.5 * k && r < rn + 2 * k) vb.push(v); else if (r < rn - 3 * k) vn.push(v);
+  }
+  var nb = mediane(vn), nw = mediane(vb), s = 200 / Math.max(20, nw - nb);
+  DIAG.niveaux = { noir: r2(nb), blanc: r2(nw) };
+  for (var i = 0; i < N * N; i++) R[i] = (R[i] - nb) * s + 30;
+  return R;
+}
+/* Image polaire de la zone blanche (lignes, chiffres, inscriptions) pour retrouver la rotation */
+var NA = 720, NRAD = 28;
+function polaireZone(R, N, cfg) {
+  var k = cfg.k, c = N / 2, r0 = (cfg.noir / 2 + 0.6) * k, r1 = Math.min(N / 2 - 2, (rz(cfg, 1) + 4) * k);
+  var P = new Float32Array(NA * NRAD), m = 0;
+  for (var a = 0; a < NA; a++) {
+    var an = a / NA * 2 * Math.PI, co = Math.cos(an), si = Math.sin(an);
+    for (var j = 0; j < NRAD; j++) {
+      var r = r0 + (r1 - r0) * j / (NRAD - 1), x = c + r * co, y = c + r * si, x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0, p = y0 * N + x0;
+      var v = (R[p] * (1 - fx) + R[p + 1] * fx) * (1 - fy) + (R[p + N] * (1 - fx) + R[p + N + 1] * fx) * fy;
+      P[a * NRAD + j] = v; m += v;
+    }
+  }
+  /* on retire, rayon par rayon, la variation lente le long du cercle (eclairage inegal) :
+     il ne reste que les details (chiffres, inscriptions) qui fixent l'orientation */
+  var Q = new Float32Array(NA * NRAD), L = 15;
+  for (var jj = 0; jj < NRAD; jj++) {
+    var acc = 0;
+    for (var t = -L; t <= L; t++) acc += P[((t + NA) % NA) * NRAD + jj];
+    for (var a2 = 0; a2 < NA; a2++) {
+      Q[a2 * NRAD + jj] = P[a2 * NRAD + jj] - acc / (2 * L + 1);
+      acc += P[((a2 + L + 1) % NA) * NRAD + jj] - P[((a2 - L + NA) % NA) * NRAD + jj];
+    }
+  }
+  return Q;
+}
+/* Rotation (radians) de la photo B par rapport a la photo A, cherchee sur le tour complet
+   pour le diagnostic, mais retenue dans +-45 degres. Quand deux orientations se valent presque
+   (chiffres repetes aux 4 coins de la cible), on garde la plus petite rotation. */
+function estimerRotation(PA, PB) {
+  var sc = new Float64Array(NA), best = -1e30, nA = 0, nB = 0, s, a, j;
+  for (var i = 0; i < PA.length; i++) { nA += PA[i] * PA[i]; nB += PB[i] * PB[i]; }
+  /* tous les decalages dans +-45 degres (et voisins), un sur huit ailleurs (diagnostic de quart de tour) */
+  for (s = 0; s < NA; s++) {
+    var ang = s > NA / 2 ? NA - s : s;
+    if (ang > NA / 8 + 2 && s % 8) { sc[s] = -1e30; continue; }
+    var t = 0;
+    for (a = 0; a < NA; a++) {
+      var ia = a * NRAD, ib = ((a + s) % NA) * NRAD;
+      for (j = 0; j < NRAD; j++) t += PA[ia + j] * PB[ib + j];
+    }
+    sc[s] = t; if (t > best) best = t;
+  }
+  /* On se limite a +-45 degres : au-dela, les defauts de perspective (symetriques par demi-tour)
+     peuvent l'emporter sur l'orientation reelle. Une photo tournee d'un quart de tour est signalee. */
+  var choix = -1, angle = function (k) { return k > NA / 2 ? k - NA : k; }, LIMITE_ROT = NA / 8, meilleurLim = -1e30;
+  for (s = 0; s < NA; s++) if (Math.abs(angle(s)) <= LIMITE_ROT && sc[s] > meilleurLim) meilleurLim = sc[s];
+  if (typeof DIAG === "object") DIAG.rotation_hors_limite = meilleurLim < 0.8 * best;
+  for (s = 0; s < NA; s++) {
+    var prev = sc[(s + NA - 1) % NA], next = sc[(s + 1) % NA];
+    if (Math.abs(angle(s)) > LIMITE_ROT) continue;
+    if (sc[s] >= prev && sc[s] >= next && sc[s] >= 0.97 * meilleurLim && (choix < 0 || Math.abs(angle(s)) < Math.abs(angle(choix)))) choix = s;
+  }
+  if (choix < 0) for (s = 0; s < NA; s++) if (Math.abs(angle(s)) <= LIMITE_ROT && sc[s] === meilleurLim) { choix = s; break; }
+  var y0 = sc[(choix + NA - 1) % NA], y1 = sc[choix], y2 = sc[(choix + 1) % NA], f = 0, den = y0 - 2 * y1 + y2;
+  if (den < 0) f = 0.5 * (y0 - y2) / den;
+  if (typeof DIAG === "object") DIAG.rotation_qualite = r2(y1 / Math.sqrt(nA * nB + 1e-9));
+  return (angle(choix) + f) / NA * 2 * Math.PI;
+}
+/* Changement entre A (avant) et B (apres), images normalisees (noir = 30, blanc = 230).
+   Un trou laisse voir l'arriere de la cible : le pixel ne ressemble plus au papier de sa zone.
+   Une gommette ramene le pixel a la couleur du papier : elle n'est pas comptee comme trou. */
+var SEUIL_CHANGE = 20; /* ecart minimal (niveaux normalises, noir 30 / blanc 230) pour parler de changement */
+function masquesSignes(A, B, N, cfg, s) {
+  var k = cfg.k, c = N / 2, rn = cfg.noir / 2 * k, marge = Math.max(2, 0.5 * k);
+  var trou = new Uint8Array(N * N), bouche = new Uint8Array(N * N);
+  for (var y = 1; y < N - 1; y++) for (var x = 1; x < N - 1; x++) {
+    var t = 0, mb = 0;
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var q = (y + dy) * N + x + dx; t += B[q] - A[q]; mb += B[q]; }
+    t /= 9; mb /= 9;
+    if (Math.abs(t) <= s) continue;
+    var r = Math.hypot(x - c, y - c), i = y * N + x;
+    var papier = r < rn - marge ? mb < 30 + s : r > rn + marge ? mb > 230 - s : false;
+    if (papier) bouche[i] = 1; else trou[i] = 1;
+  }
+  return { trou: trou, bouche: bouche };
+}
+/* Trous deja presents sur une photo de reference (anciens impacts sans gommette) */
+function trousPresents(R, N, cfg) {
+  var m = masqueSimple(R, N, cfg), b = new Uint8Array(N * N);
+  /* au-dela de la zone 1 (bord de carte, fond visible dans les coins) ce ne sont pas des impacts */
+  var c = N / 2, rmax = (rz(cfg, 1) + 3) * cfg.k;
+  for (var i = 0; i < N * N; i++) b[i] = m[i] > 0.5 && Math.hypot(i % N - c, Math.floor(i / N) - c) < rmax ? 1 : 0;
+  return ouvertureDisque(b, N, 1.5 * cfg.k);
+}
+function compterZones(m, N, aireMin) {
+  var cc = composantes(m, N, N), n = 0;
+  cc.comps.forEach(function (c) { if (c.aire >= aireMin) n++; });
+  return n;
+}
+/* Nouveau trou entre deux photos (tir par tir). rOuv efface les liseres dus a un leger decalage. */
+function nouveauTrou(R0, Rprev, Rcur, N, cfg, rOuv, trousRef) {
+  var k = cfg.k, s = SEUIL_CHANGE, r = cfg.rp * k, aireP = Math.PI * r * r;
+  var sPrev = masquesSignes(Rprev, Rcur, N, cfg, s), sRef = masquesSignes(R0, Rcur, N, cfg, s);
+  /* fermeture : le bord gris d'une ligne de zone a presque la teinte d'un trou et laisse une fente
+     dans le masque ; on la referme avant de chercher le trou */
+  var chF = fermeture(sPrev.trou, N, 2), chB = new Uint8Array(N * N);
+  for (var q2 = 0; q2 < N * N; q2++) chB[q2] = chF[q2] > 0.5 ? 1 : 0;
+  var ch = ouvertureDisque(chB, N, rOuv), cum = sRef.trou;
+  /* une gommette sur un trou bouche une tache ronde ; les liseres d'un leger decalage sont fins */
+  DIAG.gommettes = compterZones(ouvertureDisque(sPrev.bouche, N, 0.5 * r), N, 0.5 * aireP);
+  /* les trous deja la sur la photo de reference comptent comme trous, sauf s'ils ont recu une gommette */
+  if (trousRef) for (var q1 = 0; q1 < N * N; q1++) if (trousRef[q1] && !sRef.bouche[q1]) cum[q1] = 1;
+  /* un nouveau trou est un trou, meme s'il ressemble a la gommette qu'il traverse (comparaison a la reference trop faible) */
+  for (var q3 = 0; q3 < N * N; q3++) if (chB[q3]) cum[q3] = 1;
+  /* Les vrais trous resistent a une ouverture de 0,7 x leur rayon ; les liseres de lignes non */
+  var cumF = fermeture(cum, N, 2), cumB = new Uint8Array(N * N);
+  for (var q0 = 0; q0 < N * N; q0++) cumB[q0] = cumF[q0] > 0.5 ? 1 : 0;
+  cum = cumB;
+  var trous = ouvertureDisque(cum, N, 0.7 * r);
+  var cc = composantes(ch, N, N), best = null, valides = 0, rejets = [];
+  cc.comps.forEach(function (c) {
+    var xm = (c.sx / c.aire - N / 2) / k, ym = (c.sy / c.aire - N / 2) / k;
+    if (Math.hypot(xm, ym) - cfg.rp > rz(cfg, 1) + 0.5) return;  /* au-dela de la zone 1 : bord d'image */
+    if (c.aire < 0.03 * aireP) return;
+    if (c.aire > 2.5 * aireP) { rejets.push(['grand', r2(c.aire / aireP)]); return; }
+    var dedans = 0;
+    for (var y = c.y0; y <= c.y1; y++) for (var x = c.x0; x <= c.x1; x++) { var q = y * N + x; if (cc.lab[q] === c.id && trous[q]) dedans++; }
+    if (dedans < 0.5 * c.aire) { rejets.push(['hors_trou', r2(c.aire / aireP), r2(dedans / c.aire)]); return; }
+    if (c.aire >= 0.5 * aireP) valides++;
+    if (!best || c.aire > best.aire) best = c;
+  });
+  DIAG.nouveau = { candidats: cc.comps.length, retenu: best ? r2(best.aire / aireP) : null, nets: valides, rejets: rejets.slice(0, 4) };
+  if (!best) return null;
+  var bx, by;
+  if (best.aire > 0.9 * aireP) { bx = best.sx / best.aire; by = best.sy / best.aire; }
+  else {
+    var off = [], ri = Math.ceil(r);
+    for (var dy = -ri; dy <= ri; dy++) for (var dx = -ri; dx <= ri; dx++) if (dx * dx + dy * dy <= r * r) off.push(dx, dy);
+    var score = function (cx, cy) {
+      var t = 0, x0 = Math.round(cx), y0 = Math.round(cy);
+      for (var i = 0; i < off.length; i += 2) {
+        var x = x0 + off[i], y = y0 + off[i + 1];
+        if (x < 0 || y < 0 || x >= N || y >= N) { t -= 1; continue; }
+        var q = y * N + x; t += ch[q] ? 1 : cum[q] ? -0.1 : -1;
+      }
+      return t;
+    };
+    var cx = best.sx / best.aire, cy = best.sy / best.aire, bs = -1e18, ux, uy;
+    bx = cx; by = cy;
+    for (ux = -r; ux <= r; ux += 1) for (uy = -r; uy <= r; uy += 1) { var v = score(cx + ux, cy + uy); if (v > bs) { bs = v; bx = cx + ux; by = cy + uy; } }
+    var sx = 0, sy = 0, n = 0;
+    for (ux = -2; ux <= 2; ux += 0.5) for (uy = -2; uy <= 2; uy += 0.5) if (score(bx + ux, by + uy) >= bs - 0.5) { sx += bx + ux; sy += by + uy; n++; }
+    if (n) { bx = sx / n; by = sy / n; }
+  }
+  return { x: (bx - N / 2) / k, y: -(by - N / 2) / k, chevauche: best.aire <= 0.9 * aireP, autres: Math.max(0, valides - 1) };
+}
+/* Simulation d'une prise a la main : la meme cible, un peu tournee, decalee, inclinee */
+/* Recalage fin (Lucas-Kanade, homographie, compositionnel inverse) de l'image I sur le modele T.
+   Les pixels qui ont change (nouveaux trous, gommettes) sont mis de cote par une ponderation robuste.
+   Retourne H (3x3) qui envoie un point du modele vers l'image, en coordonnees centrees reduites. */
+function alignerHomographie(T, I, N, cfg, H0, plein) {
+  /* plein : calcul a pleine resolution (affinage final) ; sinon a demi-resolution (plus rapide) */
+  var f = plein ? 1 : 2, n = plein ? N : N >> 1, S = N / 2, i, x, y;
+  var reduire = function (A) {
+    if (f === 1) return A;
+    var o = new Float32Array(n * n);
+    for (y = 0; y < n; y++) for (x = 0; x < n; x++) { var q = 2 * y * N + 2 * x; o[y * n + x] = (A[q] + A[q + 1] + A[q + N] + A[q + N + 1]) / 4; }
+    return o;
+  };
+  var Ts = reduire(T), Is = reduire(I), rmax = (rz(cfg, 1) + 2) * cfg.k;
+  var P = []; /* points du modele : X, Y, valeur, 8 gradients "steepest descent" */
+  for (y = 2; y < n - 2; y += 1) for (x = 2; x < n - 2; x += 1) {
+    var xf = f === 1 ? x : 2 * x + 0.5, yf = f === 1 ? y : 2 * y + 0.5;
+    if (Math.hypot(xf - S, yf - S) > rmax) continue;
+    var q = y * n + x, gx = (Ts[q + 1] - Ts[q - 1]) / 2 * S / f, gy = (Ts[q + n] - Ts[q - n]) / 2 * S / f;
+    if (Math.abs(gx) + Math.abs(gy) < 1e-3) continue;  /* zones uniformes : n'apportent rien */
+    var X = (xf - S) / S, Y = (yf - S) / S, gr = gx * X + gy * Y;
+    P.push([X, Y, Ts[q], gx * X, gy * X, gx * Y, gy * Y, gx, gy, -X * gr, -Y * gr]);
+  }
+  var H = H0 ? H0.slice() : [1, 0, 0, 0, 1, 0, 0, 0, 1], c = 12, it, k1, k2;
+  for (it = 0; it < (plein ? 8 : 40); it++) {
+    var A = [], B = [0, 0, 0, 0, 0, 0, 0, 0], m = 0;
+    for (k1 = 0; k1 < 8; k1++) A.push([0, 0, 0, 0, 0, 0, 0, 0]);
+    for (i = 0; i < P.length; i++) {
+      var p = P[i], wh = H[6] * p[0] + H[7] * p[1] + H[8];
+      var xs = (H[0] * p[0] + H[1] * p[1] + H[2]) / wh * S + S, ys = (H[3] * p[0] + H[4] * p[1] + H[5]) / wh * S + S;
+      if (f === 2) { xs = (xs - 0.5) / 2; ys = (ys - 0.5) / 2; }
+      var x0 = Math.floor(xs), y0 = Math.floor(ys);
+      if (x0 < 0 || y0 < 0 || x0 >= n - 1 || y0 >= n - 1) continue;
+      var fx = xs - x0, fy = ys - y0, q0 = y0 * n + x0;
+      var e = (Is[q0] * (1 - fx) + Is[q0 + 1] * fx) * (1 - fy) + (Is[q0 + n] * (1 - fx) + Is[q0 + n + 1] * fx) * fy - p[2];
+      var wgt = Math.abs(e) <= c ? 1 : c / Math.abs(e); m++;
+      for (k1 = 0; k1 < 8; k1++) { var s1 = p[3 + k1] * wgt; B[k1] += s1 * e; for (k2 = k1; k2 < 8; k2++) A[k1][k2] += s1 * p[3 + k2]; }
+    }
+    if (m < 500) break;
+    for (k1 = 0; k1 < 8; k1++) for (k2 = 0; k2 < k1; k2++) A[k1][k2] = A[k2][k1];
+    var d = resoudre(A, B);
+    if (d.some(function (v) { return !isFinite(v); })) break;
+    /* H <- H . inverse(H(d)) */
+    var Hd = [1 + d[0], d[2], d[4], d[1], 1 + d[3], d[5], d[6], d[7], 1], Hi = inv3(Hd), Hn = mul3(H, Hi);
+    for (i = 0; i < 9; i++) H[i] = Hn[i] / Hn[8];
+    if (Math.max(Math.abs(d[4]), Math.abs(d[5])) * S < 0.005 && Math.abs(d[0]) + Math.abs(d[3]) < 1e-5) break;
+  }
+  /* garde-fou : un recalage enorme signale un echec, on le refuse */
+  var dep = Math.max(Math.abs(H[2]), Math.abs(H[5])) * S / cfg.k, def = Math.abs(H[0] - 1) + Math.abs(H[4] - 1) + Math.abs(H[1]) + Math.abs(H[3]);
+  var persp = Math.abs(H[6]) + Math.abs(H[7]);
+  DIAG.recalage = DIAG.recalage || {};
+  DIAG.recalage[plein ? "fin" : "grossier"] = { iterations: it, decalage_mm: r2(dep), deformation: r2(def * 1000) / 1000, perspective: r2(persp * 1000) / 1000 };
+  /* garde-fou : NaN, decalage ou deformation enormes = echec, on le refuse */
+  if (!H.every(isFinite) || !(dep <= 4 && def <= 0.15 && persp <= 0.3)) { DIAG.recalage.refuse = true; return null; }
+  return H;
+}
+function mul3(A, B) {
+  var C = [];
+  for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++) C.push(A[r * 3] * B[c] + A[r * 3 + 1] * B[3 + c] + A[r * 3 + 2] * B[6 + c]);
+  return C;
+}
+function inv3(m) {
+  var a = m[0], b = m[1], c = m[2], d = m[3], e = m[4], f = m[5], g = m[6], h = m[7], i = m[8];
+  var A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g, det = a * A + b * B + c * C;
+  return [A / det, -(b * i - c * h) / det, (b * f - c * e) / det, B / det, (a * i - c * g) / det, -(a * f - c * d) / det, C / det, -(a * h - b * g) / det, (a * e - b * d) / det];
+}
+/* Photo de reference (cible avant la serie) : image redressee, signature de rotation, anciens trous */
+function preparerReference(photo, cfg) {
+  var geo = trouverVisuel(photo), ra = redresserRot(photo, geo, cfg, 0);
+  normaliser(ra.img, ra.N, cfg);
+  return { R: ra.img, N: ra.N, P: polaireZone(ra.img, ra.N, cfg), trous: trousPresents(ra.img, ra.N, cfg), geo: geo };
+}
+/* Photo prise a la main, alignee sur la reference (rotation retrouvee par la zone blanche) */
+function redresserAligne(photo, ref, cfg) {
+  var geo = trouverVisuel(photo), N = ref.N, R = normaliser(redresserRot(photo, geo, cfg, 0).img, N, cfg);
+  var rot = estimerRotation(ref.P, polaireZone(R, N, cfg));
+  DIAG.rotation_deg = r2(rot * 180 / Math.PI);
+  if (Math.abs(rot) > 0.001) R = normaliser(redresserRot(photo, geo, cfg, rot).img, N, cfg);
+  /* la cible a pu bouger ou pivoter sur son support : recalage fin sur la reference */
+  var H = alignerHomographie(ref.R, R, N, cfg, null, false);     /* grossier, a demi-resolution */
+  if (H) H = alignerHomographie(ref.R, R, N, cfg, H, true) || H;  /* affinage a pleine resolution */
+  if (H) R = normaliser(redresserRot(photo, geo, cfg, rot, H).img, N, cfg);
+  return R;
+}
+/* Photo seule avec photo "avant" : seuls les nouveaux trous comptent ; gommettes et anciens trous ignores */
+function analyserAvantApres(ref, photo, cfg) {
+  var N = ref.N, R = redresserAligne(photo, ref, cfg), s = SEUIL_CHANGE;
+  var sg = masquesSignes(ref.R, R, N, cfg, s);
+  DIAG.gommettes = compterZones(ouvertureDisque(sg.bouche, N, 0.5 * cfg.rp * cfg.k), N, 0.5 * Math.PI * (cfg.rp * cfg.k) * (cfg.rp * cfg.k));
+  var libre = new Uint8Array(N * N);
+  for (var i = 0; i < N * N; i++) libre[i] = ref.trous[i] && !sg.bouche[i] ? 1 : 0;
+  return { rect: { img: R, N: N }, impacts: extraireImpacts(sg.trou, N, cfg, libre) };
+}
+function analyserImpactsPhoto(photo, cfg) {
+  var geo = trouverVisuel(photo), ra = redresserRot(photo, geo, cfg, 0);
+  normaliser(ra.img, ra.N, cfg);
+  return { rect: ra, geo: geo, impacts: extraireImpacts(masqueSimple(ra.img, ra.N, cfg), ra.N, cfg) };
+}
+</script>
+<script>/* ===== Application ===== */
+function makeCanvas(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+var $ = function (id) { return document.getElementById(id); };
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function fr(n, d) { return n.toFixed(d).replace(".", ","); }
+var CLE = "cible10m-v1";
+var EMAIL_DEFAUT = "test_cible@laposte.net"; /* destinataire des journaux, modifiable dans l'application */
+var DB = (function () { try { return JSON.parse(localStorage.getItem(CLE)); } catch (e) { return null; } })();
+/* donnees relues : on ne garde que ce qui est bien forme */
+if (!DB || typeof DB !== "object") DB = {};
+if (!Array.isArray(DB.series)) DB.series = [];
+DB.series = DB.series.filter(function (s) { return s && CFG[s.type] && Array.isArray(s.impacts) && s.id; });
+if (!DB.prefs || typeof DB.prefs !== "object") DB.prefs = {};
+var stockageEnPanne = false;
+function sauver() {
+  try { localStorage.setItem(CLE, JSON.stringify(DB)); stockageEnPanne = false; }
+  catch (e) { if (!stockageEnPanne) { stockageEnPanne = true; toast("Mémoire du téléphone pleine ou bloquée : les séries ne sont plus enregistrées."); } }
+}
+var CALIBRE_DEFAUT = { carabine: 5.5, pistolet: 4.5 }; /* diametre du plomb en mm, modifiable par arme */
+var prefs = { type: CFG[DB.prefs.type] ? DB.prefs.type : "carabine", mode: DB.prefs.mode === "photo" ? "photo" : "tir", sim: !!DB.prefs.sim,
+  email: typeof DB.prefs.email === "string" && DB.prefs.email ? DB.prefs.email : EMAIL_DEFAUT,
+  calibre: { carabine: calibreValide(DB.prefs.calibre && DB.prefs.calibre.carabine, "carabine"), pistolet: calibreValide(DB.prefs.calibre && DB.prefs.calibre.pistolet, "pistolet") } };
+function calibreValide(v, type) { return v === 4.5 || v === 5.5 ? v : CALIBRE_DEFAUT[type]; }
+/* parametres de cotation d'une serie : la cible + le calibre du plomb (les anciennes series etaient en 4,5 mm) */
+function cfgSerie(type, calibre) { var c = Object.assign({}, CFG[type]); c.rp = (calibre || 4.5) / 2; c.calibre = calibre || 4.5; return c; }
+/* ---------- Journal de diagnostic ---------- */
+var VERSION = "1.7.0";
+var CLE_J = "cible10m-journal", MAX_ENTREES = 500, MAX_CAR = 200000;
+var J = (function () { try { var v = JSON.parse(localStorage.getItem(CLE_J)); return Array.isArray(v) ? v : []; } catch (e) { return []; } })();
+var derniereImage = null; /* derniere photo analysee (en memoire seulement), pour la piece jointe */
+function log(ev, data) {
+  var e = { t: Date.now(), e: ev };
+  if (data) for (var k in data) e[k] = data[k];
+  J.push(e);
+  if (J.length > MAX_ENTREES) J.splice(0, J.length - MAX_ENTREES);
+  clearTimeout(log.t); log.t = setTimeout(sauverJournal, 300);
+}
+function sauverJournal() {
+  var txt = JSON.stringify(J);
+  while (txt.length > MAX_CAR && J.length > 10) { J.splice(0, Math.ceil(J.length / 10)); txt = JSON.stringify(J); }
+  try { localStorage.setItem(CLE_J, txt); } catch (e) { /* stockage plein ou indisponible */ }
+  if (!$("v-accueil").hidden && $("diag").open) majDiag();
+}
+function horodate(t) { var d = new Date(t); return d.toLocaleDateString("fr-FR") + " " + d.toLocaleTimeString("fr-FR"); }
+function enteteJournal() {
+  var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  return ["Journal Cible 10 m — version " + VERSION,
+    "Généré le " + horodate(Date.now()),
+    "Appareil : " + navigator.userAgent,
+    "Écran : " + screen.width + "×" + screen.height + " @" + (window.devicePixelRatio || 1) + " · " + (standalone ? "application installée" : "navigateur") +
+      (window.claude ? " · page Claude" : ""),
+    "Réglages : " + prefs.type + " " + fr(prefs.calibre[prefs.type], 1) + " mm, " + (prefs.mode === "tir" ? "tir par tir" : "photo seule") + (prefs.sim ? ", simulation" : ""),
+    "Séries enregistrées : " + DB.series.length + " · entrées du journal : " + J.length, ""].join("\n");
+}
+function ligneJournal(e) {
+  var d = {}; for (var k in e) if (k !== "t" && k !== "e") d[k] = e[k];
+  return horodate(e.t) + "  " + e.e + "  " + JSON.stringify(d);
+}
+function texteJournal(max) {
+  var tete = enteteJournal(), lignes = J.map(ligneJournal), corps = lignes.join("\n");
+  if (!max || tete.length + corps.length <= max) return tete + corps + "\n";
+  var garde = [], n = tete.length + 80;
+  for (var i = lignes.length - 1; i >= 0 && n + lignes[i].length + 1 <= max; i--) { garde.unshift(lignes[i]); n += lignes[i].length + 1; }
+  return tete + "[… " + (lignes.length - garde.length) + " entrées plus anciennes non incluses : utilisez « Envoyer en pièce jointe » pour le journal complet]\n" + garde.join("\n") + "\n";
+}
+window.addEventListener("error", function (ev) {
+  log("erreur_js", { msg: String(ev.message || ""), lieu: (ev.filename || "").split("/").pop() + ":" + ev.lineno + ":" + ev.colno, pile: ev.error && ev.error.stack ? String(ev.error.stack).slice(0, 600) : "" });
+});
+window.addEventListener("unhandledrejection", function (ev) { log("erreur_js", { msg: "Promesse rejetée : " + String(ev.reason && ev.reason.message || ev.reason).slice(0, 300) }); });
+var S = null;          /* seance ouverte */
+var annulation = null; /* action a annuler depuis le toast */
+
+/* ---------- Accueil ---------- */
+function majAccueil() {
+  ["carabine", "pistolet"].forEach(function (t) { $("c-" + t).setAttribute("aria-pressed", String(prefs.type === t)); });
+  ["tir", "photo"].forEach(function (m) { $("p-" + m).setAttribute("aria-pressed", String(prefs.mode === m)); });
+  $("cal-45").setAttribute("aria-pressed", String(prefs.calibre[prefs.type] === 4.5));
+  $("cal-55").setAttribute("aria-pressed", String(prefs.calibre[prefs.type] === 5.5));
+  $("cal-titre").textContent = "Plomb (" + CFG[prefs.type].nom.toLowerCase() + ")";
+  $("sim").checked = prefs.sim;
+  $("aide-mode").textContent = prefs.mode === "tir"
+    ? "Une photo avant le premier tir, puis une après chaque plomb. Les anciens trous et les gommettes, même collées en cours de série, ne sont pas comptés."
+    : "Une photo avant la série (conseillée si des trous n'ont pas de gommette), puis une après. Les plombs groupés dans un même trou ne se comptent pas tous.";
+  if ($("diag").open) majDiag();
+  var h = $("hist");
+  if (!DB.series.length) { h.innerHTML = '<p class="vide">Aucune série pour l\'instant. Vos séries s\'enregistrent sur ce téléphone.</p>'; return; }
+  h.innerHTML = "";
+  DB.series.slice().sort(function (a, b) { return b.date - a.date; }).forEach(function (s) {
+    var b = document.createElement("button"); b.className = "serie";
+    var tot = s.impacts.reduce(function (a, t) { return a + t.dec; }, 0);
+    var d = new Date(s.date);
+    b.innerHTML = "<b></b><span class=\"score\"></span><span class=\"meta\"></span>";
+    b.children[0].textContent = CFG[s.type].nom + " " + fr(s.calibre || 4.5, 1) + " mm · " + s.impacts.length + " tir" + (s.impacts.length > 1 ? "s" : "") + (s.sim ? " · simulée" : "");
+    b.children[1].textContent = s.impacts.length ? fr(tot, 1) : "–";
+    b.children[2].textContent = d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) + " · " +
+      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) + " · " + (s.mode === "tir" ? "tir par tir" : "photo seule");
+    b.onclick = function () { ouvrir(s); };
+    h.appendChild(b);
+  });
+}
+function choisirPref(k, v) { prefs[k] = v; DB.prefs = prefs; sauver(); majAccueil(); }
+$("c-carabine").onclick = function () { choisirPref("type", "carabine"); };
+$("c-pistolet").onclick = function () { choisirPref("type", "pistolet"); };
+["45", "55"].forEach(function (c) {
+  $("cal-" + c).onclick = function () { prefs.calibre[prefs.type] = c === "45" ? 4.5 : 5.5; DB.prefs = prefs; sauver(); log("calibre", { type: prefs.type, mm: prefs.calibre[prefs.type] }); majAccueil(); };
+});
+$("p-tir").onclick = function () { choisirPref("mode", "tir"); };
+$("p-photo").onclick = function () { choisirPref("mode", "photo"); };
+$("sim").onchange = function () { choisirPref("sim", this.checked); };
+
+/* ---------- Seance ---------- */
+function nouvelleSeance() {
+  var rec = { id: Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), date: Date.now(), type: prefs.type, calibre: prefs.calibre[prefs.type], mode: prefs.mode, sim: prefs.sim, impacts: [] };
+  S = { rec: rec, cfg: cfgSerie(rec.type, rec.calibre), phase: rec.mode === "tir" ? "ref" : "avant", ref: null, avant: null, prev: null, img: null, undo: null, sim: null, enregistre: false };
+  if (rec.sim) {
+    var seed = (Date.now() % 100000) + 1, r = prng(seed);
+    S.sim = { geo: nouvelleGeo(S.cfg, seed), r: r, tirs: [], fond: fondSimule(S.cfg, r), ox: gauss(r) * S.cfg.pas * 0.8, oy: gauss(r) * S.cfg.pas * 0.8, n: 0, etape: 0 };
+  }
+  log("seance", { type: rec.type, mode: rec.mode, sim: rec.sim }); oublierSeance(); $("reprise").hidden = true;
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* facultatif */ }
+  afficherSeance();
+  message(S.phase === "ref" ? "Photographiez la cible avant le premier tir, en entier, bien à plat (gommettes déjà collées ou non)." : "Pour ne compter que les nouveaux trous, photographiez d'abord la cible avant la série. Sinon, touchez « Pas de photo avant ».");
+  verrouEcran(true);
+}
+function ouvrir(rec) {
+  S = { rec: rec, cfg: cfgSerie(rec.type, rec.calibre), phase: "lecture", ref: null, prev: null, img: null, undo: null, sim: null, enregistre: true };
+  log("relecture", { serie: rec.id, tirs: rec.impacts.length });
+  afficherSeance(); message("");
+}
+function afficherSeance() {
+  $("v-accueil").hidden = true; $("v-seance").hidden = false; $("confirm").hidden = true;
+  var c = $("cible"), N = Math.round(2 * (rz(S.cfg, 1) + 5) * S.cfg.k); c.width = N; c.height = N;
+  window.scrollTo(0, 0); rendre();
+}
+function quitter() {
+  if (S) { enregistrer(); if (!S.sim) oublierSeance(); }
+  S = null; verrouEcran(false); cacherToast(); occupe(false);
+  $("v-seance").hidden = true; $("v-accueil").hidden = false; majAccueil(); window.scrollTo(0, 0);
+}
+$("retour").onclick = quitter;
+$("commencer").onclick = nouvelleSeance;
+
+function enregistrer() {
+  var r = S.rec, i = DB.series.findIndex(function (s) { return s.id === r.id; });
+  var copie = { id: r.id, date: r.date, type: r.type, calibre: r.calibre, mode: r.mode, sim: r.sim, impacts: r.impacts.map(function (t) { return { x: +t.x.toFixed(2), y: +t.y.toFixed(2), pts: t.pts, dec: t.dec, auto: t.auto }; }) };
+  if (!copie.impacts.length) { if (i >= 0) DB.series.splice(i, 1); }
+  else if (i >= 0) DB.series[i] = copie; else DB.series.push(copie);
+  sauver();
+}
+function message(t, alerte) { var m = $("msg"); m.textContent = t || ""; m.className = "msg" + (alerte ? " alerte" : ""); }
+
+/* ---------- Photos ---------- */
+function actionPrincipale() {
+  if (S.phase === "lecture") return;
+  if (S.sim) { var s0 = S; occupe(true); setTimeout(function () { if (S === s0) traiter(photoSimulee(), s0); else occupe(false); }, 30); return; }
+  $("in-camera").click();
+}
+$("action").onclick = actionPrincipale;
+$("galerie").onclick = function () { if (S.phase !== "lecture") $("in-galerie").click(); };
+["in-camera", "in-galerie"].forEach(function (id) {
+  $(id).addEventListener("change", function () {
+    var f = this.files && this.files[0], s0 = S; this.value = ""; if (!f || !S) return;
+    occupe(true);
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () {
+      if (S !== s0) { URL.revokeObjectURL(url); occupe(false); return; }  /* seance quittee pendant le chargement */
+      var s = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.round(im.naturalWidth * s), h = Math.round(im.naturalHeight * s);
+      var cv = makeCanvas(w, h), ctx = cv.getContext("2d"); ctx.drawImage(im, 0, 0, w, h); URL.revokeObjectURL(url);
+      log("photo", { source: id === "in-camera" ? "appareil" : "galerie", format: f.type || "?", ko: Math.round(f.size / 1024), origine: im.naturalWidth + "x" + im.naturalHeight, analyse: w + "x" + h });
+      var d = ctx.getImageData(0, 0, w, h).data, g = new Float32Array(w * h);
+      for (var i = 0; i < w * h; i++) g[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+      traiter({ canvas: cv, gris: g, w: w, h: h }, s0);
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); log("photo_illisible", { format: f.type || "?", ko: Math.round(f.size / 1024) }); occupe(false); message("Cette image n'a pas pu être lue. Réessayez avec une photo JPEG ou PNG.", true); };
+    im.src = url;
+  });
+});
+/* Simulation : cible deja utilisee, 6 anciens trous dont 4 recouverts d'une gommette */
+function fondSimule(cfg, r) {
+  var f = [], id = 100000;
+  for (var i = 0; i < 6; i++) {
+    var x = gauss(r) * cfg.pas * 1.6, y = gauss(r) * cfg.pas * 1.6;
+    f.push({ id: id++, x: x, y: y });
+    if (i < 4) f.push({ id: id++, x: x + gauss(r) * 0.3, y: y + gauss(r) * 0.3, gommette: true });
+  }
+  return f;
+}
+function photoSimulee() {
+  var sm = S.sim, cfg = S.cfg;
+  if (S.phase === "tir") {
+    sm.etape++;
+    /* une fois sur quatre, le tireur colle une gommette sur un de ses impacts avant de tirer */
+    var trous = sm.tirs.filter(function (t) { return !t.gommette; });
+    if (trous.length && sm.r() < 0.25) { var c = trous[Math.floor(sm.r() * trous.length)]; sm.tirs.push({ id: ++sm.n, x: c.x, y: c.y, gommette: true, etape: sm.etape }); }
+    sm.tirs.push({ id: ++sm.n, x: sm.ox + gauss(sm.r) * cfg.pas * 1.1, y: sm.oy + gauss(sm.r) * cfg.pas * 1.1, etape: sm.etape });
+  }
+  if (S.phase === "photo" || S.phase === "fini") { sm.tirs = []; for (var i = 0; i < 10; i++) sm.tirs.push({ id: ++sm.n, x: sm.ox + gauss(sm.r) * cfg.pas * 1.1, y: sm.oy + gauss(sm.r) * cfg.pas * 1.1 }); }
+  log("photo", { source: "simulation", tirs_sur_cible: sm.tirs.length });
+  /* la cible bouge un peu entre deux photos (support, prise a la main) */
+  sm.geoPhoto = geoBouge(sm.geo, sm.r, 1.5);
+  return photographier(cfg, sm.geoPhoto, sm.fond.concat(S.phase === "avant" || S.phase === "ref" ? [] : sm.tirs), sm.n * 31 + 7 + sm.etape);
+}
+function traiter(photo, s0) {
+  occupe(true);
+  setTimeout(function () {
+    if (!S || (s0 && S !== s0)) { occupe(false); return; }
+    var ph = S.phase, n0 = S.rec.impacts.length, t0 = performance.now();
+    DIAG = {};
+    if (derniereImage && derniereImage !== photo.canvas) derniereImage.width = 0;  /* libere la memoire (iOS) */
+    derniereImage = photo.canvas; blobPhoto = null; preparerPhotoJointe();
+    try {
+      etape(photo); memoriserSeance();
+      var im = S.rec.impacts, ajout = im.length > n0 ? im[im.length - 1] : null;
+      log("analyse", { phase: ph, ms: Math.round(performance.now() - t0), tirs: im.length,
+        nouveau: ajout ? { x: r2(ajout.x), y: r2(ajout.y), dec: ajout.dec } : null,
+        impacts: ph === "photo" || ph === "fini" ? im.map(function (t) { return [r2(t.x), r2(t.y), t.dec]; }) : undefined, diag: DIAG });
+    }
+    catch (e) {
+      log("echec", { phase: ph, msg: String(e.message || e), pile: e.stack ? String(e.stack).slice(0, 600) : "", diag: DIAG });
+      message(e.message || "L'analyse a échoué. Reprenez la photo.", true);
+    }
+    occupe(false); rendre();
+  }, 30);
+}
+function etape(photo) {
+  var cfg = S.cfg, N = Math.round(2 * (rz(cfg, 1) + 5) * cfg.k), gom;
+  if (S.phase === "avant") {
+    S.avant = preparerReference(photo, cfg); S.img = S.avant.R; S.phase = "photo";
+    if (S.sim) S.sim.geoRepere = S.sim.geoPhoto;
+    DIAG.anciens_trous = compterZones(S.avant.trous, N, 0.35 * Math.PI * (S.cfg.rp * cfg.k) * (S.cfg.rp * cfg.k));
+    message("Photo avant la série enregistrée" + (DIAG.anciens_trous ? " (" + DIAG.anciens_trous + " ancien" + (DIAG.anciens_trous > 1 ? "s" : "") + " trou" + (DIAG.anciens_trous > 1 ? "s" : "") + " sans gommette, ils ne seront pas comptés)" : "") + ". Tirez la série, puis photographiez la cible.");
+    return;
+  }
+  if (S.phase === "photo" || S.phase === "fini") {
+    var anciens = S.rec.impacts.slice(), imgAvant = S.img, refait = S.phase === "fini" && anciens.length;
+    var res = S.avant ? analyserAvantApres(S.avant, photo, cfg) : analyserImpactsPhoto(photo, cfg);
+    S.img = res.rect.img; S.repere = S.avant ? S.avant.geo : res.geo;
+    if (S.sim && !S.avant) S.sim.geoRepere = S.sim.geoPhoto;
+    S.rec.impacts = res.impacts.map(function (t) { return { x: t.x, y: t.y, pts: t.pts, dec: t.dec, auto: true }; });
+    S.phase = "fini"; enregistrer();
+    var n = res.impacts.length;
+    message(n ? n + " impact" + (n > 1 ? "s" : "") + " trouvé" + (n > 1 ? "s" : "") + ". Vérifiez sur la cible : touchez pour corriger." +
+      (S.avant ? "" : " Sans photo avant la série, un ancien trou sans gommette est compté comme un nouvel impact.") : "Aucun impact trouvé. Touchez la cible pour placer les impacts.", !n);
+    if (refait) {
+      var seance = S;
+      toast("Nouvelle analyse : l'ancienne est remplacée", function () { if (S === seance) { S.rec.impacts = anciens; S.img = imgAvant; enregistrer(); rendre(); } });
+    }
+    return;
+  }
+  if (S.phase === "ref") {
+    S.ref = preparerReference(photo, cfg); if (S.sim) S.sim.geoRepere = S.sim.geoPhoto;
+    S.prev = S.ref.R; S.img = S.ref.R; S.undo = null; S.phase = "tir";
+    message("Cible repérée. Tirez, puis photographiez-la après chaque plomb. Vous pouvez coller des gommettes en cours de série : elles sont ignorées.");
+    return;
+  }
+  var R = redresserAligne(photo, S.ref, cfg);
+  var t = nouveauTrou(S.ref.R, S.prev, R, N, cfg, Math.max(1.5, 0.25 * cfg.k), S.ref.trous);
+  gom = DIAG.gommettes ? " · gommette" + (DIAG.gommettes > 1 ? "s" : "") + " ignorée" + (DIAG.gommettes > 1 ? "s" : "") : "";
+  S.undo = { prev: S.prev, img: S.img, ajout: null };
+  S.prev = R; S.img = R;
+  if (t) {
+    var sc = coter(cfg, Math.hypot(t.x, t.y)), nouv = { x: t.x, y: t.y, pts: sc[0], dec: sc[1], auto: true };
+    S.rec.impacts.push(nouv); S.undo.ajout = nouv;
+    enregistrer();
+    message("Tir " + S.rec.impacts.length + " : " + fr(sc[1], 1) + (t.chevauche ? " · trou qui chevauche un ancien, position estimée" : "") + gom +
+      (t.autres ? " · un autre trou nouveau semble présent : vérifiez la cible" : ""), !!t.autres);
+  } else {
+    message("Aucun nouveau trou visible" + gom + " : plomb passé dans un trou existant, ou hors des zones. Touchez la cible pour placer l'impact (hors des zones = 0).", true);
+  }
+}
+
+/* ---------- Edition a la main ---------- */
+$("cible").addEventListener("click", function (e) {
+  if (!S || !(S.phase === "tir" || S.phase === "fini" || S.phase === "lecture") || !$("occupe").hidden) return;
+  var maintenant = Date.now(); if (maintenant - (this.dernierToucher || 0) < 400) return; this.dernierToucher = maintenant;
+  var c = this, r = c.getBoundingClientRect(), N = c.width, k = S.cfg.k;
+  var x = ((e.clientX - r.left) * N / r.width - N / 2) / k, y = -((e.clientY - r.top) * N / r.height - N / 2) / k;
+  var imps = S.rec.impacts, proche = -1, dmin = Math.max(S.cfg.rp, 22 * N / r.width / k);
+  imps.forEach(function (t, i) { var d = Math.hypot(t.x - x, t.y - y); if (d < dmin) { dmin = d; proche = i; } });
+  if (proche >= 0) {
+    var enleve = imps.splice(proche, 1)[0];
+    log("correction", { action: "retrait", phase: S.phase, rang: proche + 1, x: r2(enleve.x), y: r2(enleve.y), dec: enleve.dec, etait_auto: enleve.auto });
+    toast("Impact " + (proche + 1) + " enlevé", function () { if (S && S.rec.impacts === imps) { imps.splice(Math.min(proche, imps.length), 0, enleve); enregistrer(); rendre(); } });
+  } else {
+    var sc = coter(S.cfg, Math.hypot(x, y)), ajout = { x: x, y: y, pts: sc[0], dec: sc[1], auto: false };
+    imps.push(ajout);
+    log("correction", { action: "ajout", phase: S.phase, rang: imps.length, x: r2(x), y: r2(y), dec: sc[1] });
+    toast((sc[1] ? "Impact ajouté : " + fr(sc[1], 1) : "Tir hors zones ajouté : 0"), function () { var j = imps.indexOf(ajout); if (S && S.rec.impacts === imps && j >= 0) { imps.splice(j, 1); enregistrer(); rendre(); } });
+  }
+  enregistrer(); memoriserSeance();
+  rendre();
+});
+
+$("lignes").addEventListener("click", function (ev) {
+  var b = ev.target.closest && ev.target.closest("button.retirer");
+  if (!b || !S || S.phase === "ref" || S.phase === "avant") return;
+  var i = +b.getAttribute("data-i"), imps = S.rec.impacts, enleve = imps.splice(i, 1)[0];
+  if (!enleve) return;
+  log("correction", { action: "retrait", par: "tableau", phase: S.phase, rang: i + 1, x: r2(enleve.x), y: r2(enleve.y), dec: enleve.dec, etait_auto: enleve.auto });
+  toast("Tir " + (i + 1) + " retiré", function () { if (S && S.rec.impacts === imps) { imps.splice(Math.min(i, imps.length), 0, enleve); enregistrer(); rendre(); } });
+  enregistrer(); rendre();
+});
+$("annuler").onclick = function () {
+  if (!S || !S.undo) return;
+  var j = S.undo.ajout ? S.rec.impacts.indexOf(S.undo.ajout) : -1;
+  log("annulation_tir", { tir_retire: j >= 0 ? j + 1 : null });
+  if (j >= 0) S.rec.impacts.splice(j, 1);
+  S.prev = S.undo.prev; S.img = S.undo.img; S.undo = null; cacherToast();
+  if (S.sim) { var et = S.sim.etape; S.sim.tirs = S.sim.tirs.filter(function (t) { return t.etape !== et; }); }
+  enregistrer(); message("Dernier tir annulé. Reprenez la photo."); rendre();
+};
+$("passer").onclick = function () {
+  if (!S || S.phase !== "avant") return;
+  S.phase = "photo"; log("sans_photo_avant", {});
+  message("Photographiez la cible après la série. Les anciens trous sans gommette seront comptés : retirez-les en les touchant.");
+  rendre();
+};
+$("nouvelle-cible").onclick = function () {
+  if (!S) return;
+  log("nouvelle_cible", { tirs: S.rec.impacts.length });
+  S.phase = "ref"; S.ref = null; S.prev = null; S.img = null; S.undo = null;
+  if (S.sim) { S.sim.tirs = []; S.sim.fond = []; }
+  message("Mettez une cible neuve, puis photographiez-la vierge. Les tirs déjà comptés sont conservés."); rendre();
+};
+$("supprimer").onclick = function () { $("confirm").hidden = false; $("confirm").scrollIntoView({ block: "nearest" }); };
+$("conf-non").onclick = function () { $("confirm").hidden = true; };
+$("conf-oui").onclick = function () {
+  var id = S.rec.id; DB.series = DB.series.filter(function (s) { return s.id !== id; }); sauver();
+  S.rec.impacts = []; quitter();
+};
+$("exporter").onclick = async function () {
+  var r = S.rec, lignes = ["# " + CFG[r.type].nom + ", plomb " + fr(r.calibre || 4.5, 1) + " mm", "tir;x_mm;y_mm;points;decimal;source"];
+  r.impacts.forEach(function (t, i) { lignes.push([i + 1, fr(t.x, 2), fr(t.y, 2), t.pts, fr(t.dec, 1), t.auto ? "auto" : "manuel"].join(";")); });
+  var csv = lignes.join("\n"), nom = "serie-" + r.type + "-" + String(r.calibre || 4.5).replace(".", ",") + "mm-" + new Date(r.date).toISOString().slice(0, 16).replace(/[:T]/g, "-") + ".csv";
+  log("export_csv", { tirs: r.impacts.length });
+  if (!window.claude && peutPartagerFichiers()) {
+    navigator.share({ files: [new File([csv], nom, { type: "text/csv" })], title: nom }).catch(function () {});
+    return;
+  }
+  var dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+  if (dl) { try { await dl.save({ filename: nom, data: csv }); return; } catch (e) { /* refuse : on copie */ } }
+  else if (!window.claude) {
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = nom; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000); return;
+  }
+  try { await navigator.clipboard.writeText(csv); toast("Série copiée (CSV)"); } catch (e) { message("Export impossible ici. Copiez les valeurs du tableau.", true); }
+};
+
+/* ---------- Affichage ---------- */
+function occupe(on) { $("occupe").hidden = !on; $("action").disabled = on; $("galerie").disabled = on; }
+function toast(txt, annuler) {
+  $("toast-txt").textContent = txt; $("toast-btn").hidden = !annuler; annulation = annuler || null; $("toast").hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(cacherToast, 6000);
+}
+function cacherToast() { $("toast").hidden = true; annulation = null; }
+$("toast-btn").onclick = function () { if (annulation) { log("correction", { action: "annulee" }); annulation(); } cacherToast(); };
+
+function rendre() {
+  if (!S) return;
+  var cfg = S.cfg, rec = S.rec, ph = S.phase;
+  $("s-sous").textContent = (rec.mode === "tir" ? "Tir par tir" : "Photo seule") + (rec.sim ? " · simulée" : "");
+  $("s-titre").textContent = cfg.nom + " · " + fr(cfg.calibre, 1) + " mm";
+  var lib = { ref: "Photo avant le premier tir", tir: "Photo après le tir " + (rec.impacts.length + 1), avant: "Photo avant la série", photo: S.avant ? "Photo après la série" : "Photographier la cible", fini: "Reprendre la photo", lecture: "" }[ph];
+  $("action").textContent = S.sim && ph === "tir" ? "Simuler le tir " + (rec.impacts.length + 1) : S.sim && ph !== "lecture" ? lib.replace("Photographier", "Simuler").replace("Reprendre la photo", "Simuler une autre série") : lib;
+  $("bas").hidden = ph === "lecture";
+  $("galerie").hidden = !!S.sim;
+  $("annuler").hidden = !(S.undo && rec.mode === "tir" && ph === "tir");
+  $("nouvelle-cible").hidden = !(rec.mode === "tir" && ph === "tir");
+  $("exporter").hidden = !rec.impacts.length;
+  $("supprimer").hidden = !(ph === "lecture" || rec.impacts.length);
+  $("aide-edition").hidden = ph === "ref" || ph === "avant" || ph === "photo";
+  $("passer").hidden = ph !== "avant";
+  var imps = rec.impacts, n = imps.length, tot = 0, ent = 0;
+  imps.forEach(function (t) { tot += t.dec; ent += t.pts; });
+  $("v-dernier").textContent = n ? fr(imps[n - 1].dec, 1) : "–";
+  $("v-total").textContent = n ? fr(tot, 1) : "–";
+  $("v-nb").textContent = String(n);
+  $("lignes").innerHTML = n ? imps.map(function (t, i) {
+    return "<tr><td>" + (i + 1) + (t.auto ? "" : ' <span class="tag">manuel</span>') + '</td><td class="dec">' + fr(t.dec, 1) + "</td><td>" + t.pts + "</td><td>" + fr(t.x, 2) + "</td><td>" + fr(t.y, 2) +
+      '</td><td><button class="retirer" data-i="' + i + '" aria-label="Retirer le tir ' + (i + 1) + '">✕</button></td></tr>';
+  }).join("") : '<tr><td colspan="6" class="tag">Aucun tir compté.</td></tr>';
+  /* Statistiques de groupement */
+  var st = $("stats");
+  if (n >= 2) {
+    var mx = 0, my = 0, g = 0;
+    imps.forEach(function (t) { mx += t.x; my += t.y; }); mx /= n; my /= n;
+    for (var i = 0; i < n; i++) for (var j = i + 1; j < n; j++) g = Math.max(g, Math.hypot(imps[i].x - imps[j].x, imps[i].y - imps[j].y));
+    var sens = function (v, p, m) { return Math.abs(v) < 0.05 ? "" : fr(Math.abs(v), 1) + " mm " + (v > 0 ? p : m); };
+    var dec = [sens(mx, "à droite", "à gauche"), sens(my, "en haut", "en bas")].filter(Boolean).join(", ") || "centré";
+    st.innerHTML = "<span>Points entiers <b></b></span><span>Groupement c. à c. <b></b></span><span>Centre du groupe <b></b></span>";
+    st.children[0].lastChild.textContent = String(ent);
+    st.children[1].lastChild.textContent = fr(g, 1) + " mm";
+    st.children[2].lastChild.textContent = dec;
+  } else st.innerHTML = "";
+  dessiner();
+}
+function dessiner() {
+  var c = $("cible"), ctx = c.getContext("2d"), N = c.width, cfg = S.cfg, k = cfg.k, C = N / 2, i;
+  if (S.img && S.img.length === N * N) {
+    var im = ctx.createImageData(N, N), R = S.img;
+    for (i = 0; i < N * N; i++) { var v = R[i]; v = v < 0 ? 0 : v > 255 ? 255 : v; im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; }
+    ctx.putImageData(im, 0, 0);
+    ctx.strokeStyle = css("--ring"); ctx.lineWidth = Math.max(1, N / 500);
+    for (var z = 1; z <= 10; z++) { ctx.beginPath(); ctx.arc(C, C, rz(cfg, z) * k, 0, 2 * Math.PI); ctx.stroke(); }
+  } else {
+    /* Cible schematique (serie relue, ou avant la premiere photo) */
+    ctx.fillStyle = "#efefec"; ctx.fillRect(0, 0, N, N);
+    var rn = cfg.noir / 2 * k;
+    ctx.fillStyle = "#161616"; ctx.beginPath(); ctx.arc(C, C, rn, 0, 2 * Math.PI); ctx.fill();
+    ctx.lineWidth = Math.max(1, 0.15 * k);
+    for (z = 1; z <= 10; z++) {
+      var r = rz(cfg, z) * k; if (Math.abs(r - rn) < 1) continue;
+      ctx.strokeStyle = r < rn ? "#e2e2e2" : "#1e1e1e"; ctx.beginPath(); ctx.arc(C, C, r, 0, 2 * Math.PI); ctx.stroke();
+    }
+    if (cfg.r10 < 1) { ctx.fillStyle = "#e8e8e8"; ctx.beginPath(); ctx.arc(C, C, cfg.r10 * k, 0, 2 * Math.PI); ctx.fill(); }
+    if (S.phase === "ref" || S.phase === "avant" || (S.phase === "photo" && !S.rec.impacts.length)) {
+      ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.font = "500 " + Math.round(N / 24) + "px " + css("--body");
+      ctx.textAlign = "center"; ctx.fillText(S.phase === "ref" || S.phase === "avant" ? "En attente de la photo avant tir" : "En attente de la photo", C, N - N / 14);
+    }
+  }
+  var hit = css("--hit"), lw = Math.max(1.5, N / 300), imps = S.rec.impacts;
+  ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.font = "600 " + Math.round(Math.max(13, N / 34)) + "px " + css("--mono");
+  imps.forEach(function (t, j) {
+    var x = C + t.x * k, y = C - t.y * k, dernier = j === imps.length - 1;
+    ctx.lineWidth = lw * 3; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(x, y, S.cfg.rp * k, 0, 2 * Math.PI); ctx.stroke();
+    ctx.lineWidth = lw * (dernier ? 2 : 1.2); ctx.strokeStyle = hit; ctx.beginPath(); ctx.arc(x, y, S.cfg.rp * k, 0, 2 * Math.PI); ctx.stroke();
+    if (dernier) { ctx.fillStyle = hit; ctx.globalAlpha = 0.25; ctx.fill(); ctx.globalAlpha = 1; }
+    if (!t.auto) { ctx.setLineDash([lw * 2, lw * 2]); ctx.strokeStyle = "#fff"; ctx.lineWidth = lw; ctx.stroke(); ctx.setLineDash([]); }
+    var tx = x + S.cfg.rp * k + 3, ty = y - S.cfg.rp * k * 0.7;
+    ctx.lineWidth = lw * 2.5; ctx.strokeStyle = "rgba(0,0,0,.8)"; ctx.strokeText(String(j + 1), tx, ty);
+    ctx.fillStyle = "#fff"; ctx.fillText(String(j + 1), tx, ty);
+  });
+}
+
+/* Garder l'ecran allume pendant une seance (telephone sur support) */
+var verrou = null;
+async function verrouEcran(on) {
+  try {
+    if (on && !verrou && navigator.wakeLock) {
+      var v = await navigator.wakeLock.request("screen");
+      if (!S || S.phase === "lecture") { v.release(); return; }  /* seance quittee entre-temps */
+      verrou = v; v.addEventListener("release", function () { if (verrou === v) verrou = null; });
+    }
+    if (!on && verrou) { await verrou.release(); verrou = null; }
+  } catch (e) { verrou = null; }
+}
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && S && S.phase !== "lecture") { verrou = null; verrouEcran(true); } });
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost") &&!/claude\.ai|claudeusercontent/.test(location.host)) {
+  try { navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) { /* pas d'installation hors-ligne ici */ }
+}
+/* ---------- Reprise de seance (Android peut decharger la page pendant que l'appareil photo est ouvert) ---------- */
+var IDB = null;
+function ouvrirIDB() {
+  return new Promise(function (ok) {
+    try {
+      if (!window.indexedDB) return ok(null);
+      var rq = indexedDB.open("cible10m", 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore("seance"); };
+      rq.onsuccess = function () { ok(rq.result); };
+      rq.onerror = function () { ok(null); };
+    } catch (e) { ok(null); }
+  });
+}
+function idbFaire(mode, f) {
+  return (IDB ? Promise.resolve(IDB) : ouvrirIDB().then(function (d) { IDB = d; return d; })).then(function (d) {
+    if (!d) return null;
+    return new Promise(function (ok) {
+      try { var tx = d.transaction("seance", mode), rq = f(tx.objectStore("seance")); tx.oncomplete = function () { ok(rq && rq.result); }; tx.onerror = function () { ok(null); }; }
+      catch (e) { ok(null); }
+    });
+  });
+}
+function memoriserSeance() {
+  if (!S || S.sim || !(S.phase === "tir" || S.phase === "photo" || S.phase === "fini")) return;
+  var etat = { t: Date.now(), rec: S.rec, phase: S.phase, ref: S.ref, avant: S.avant, prev: S.prev };
+  idbFaire("readwrite", function (st) { return st.put(etat, "encours"); });
+}
+function oublierSeance() { idbFaire("readwrite", function (st) { return st.delete("encours"); }); }
+function proposerReprise() {
+  idbFaire("readonly", function (st) { return st.get("encours"); }).then(function (e) {
+    var bloc = $("reprise");
+    if (!e || !e.rec || !CFG[e.rec.type] || Date.now() - e.t > 6 * 3600 * 1000) { bloc.hidden = true; return; }
+    bloc.hidden = false;
+    $("reprise-txt").textContent = "Série en cours : " + CFG[e.rec.type].nom.toLowerCase() + ", " + (e.rec.mode === "tir" ? "tir par tir" : "photo seule") + ", " + e.rec.impacts.length + " tir" + (e.rec.impacts.length > 1 ? "s" : "") + ".";
+    $("reprendre").onclick = function () {
+      bloc.hidden = true;
+      S = { rec: e.rec, cfg: cfgSerie(e.rec.type, e.rec.calibre), phase: e.phase, ref: e.ref, avant: e.avant, prev: e.prev, img: e.prev || (e.avant && e.avant.R) || null, undo: null, sim: null, enregistre: true };
+      log("reprise", { phase: e.phase, tirs: e.rec.impacts.length });
+      afficherSeance(); verrouEcran(true);
+      message("Série reprise. " + (S.phase === "tir" ? "Photographiez la cible après le prochain tir." : "Photographiez la cible après la série."));
+    };
+    $("abandonner").onclick = function () { bloc.hidden = true; oublierSeance(); };
+  });
+}
+
+/* ---------- Panneau diagnostic ---------- */
+var blobPhoto = null, partageFichiers = null;
+function peutPartagerFichiers() {
+  if (partageFichiers === null) {
+    try { partageFichiers = !!(navigator.canShare && navigator.canShare({ files: [new File(["x"], "test.txt", { type: "text/plain" })] })); }
+    catch (e) { partageFichiers = false; }
+  }
+  return partageFichiers;
+}
+function preparerPhotoJointe() {
+  if (!derniereImage || !$("joindre-photo").checked || blobPhoto) return;
+  try { derniereImage.toBlob(function (b) { blobPhoto = b; }, "image/jpeg", 0.85); } catch (e) { blobPhoto = null; }
+}
+$("joindre-photo").addEventListener("change", preparerPhotoJointe);
+var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function majDiag() {
+  var taille = JSON.stringify(J).length;
+  $("diag-taille").textContent = J.length + " entrée" + (J.length > 1 ? "s" : "") + " · " + Math.max(1, Math.round(taille / 1024)) + " Ko";
+  if (document.activeElement !== $("email")) $("email").value = prefs.email || "";
+  $("email-etat").textContent = "Le journal sera envoyé à " + prefs.email + (prefs.email === EMAIL_DEFAUT ? " (adresse par défaut). Pour la changer, saisissez-en une autre et touchez « Enregistrer »." : ". Videz le champ et touchez « Enregistrer » pour revenir à l'adresse par défaut.");
+  var lien = $("mail-lien");
+  lien.setAttribute("aria-disabled", String(!prefs.email));
+  lien.href = prefs.email ? "mailto:" + encodeURIComponent(prefs.email).replace("%40", "@") +
+    "?subject=" + encodeURIComponent("Journal Cible 10 m v" + VERSION + " – " + new Date().toLocaleDateString("fr-FR")) +
+    "&body=" + encodeURIComponent("Bonjour,\n\nProblème constaté (à compléter) :\n\n\n" + texteJournal(2500)) : "#diag";
+  $("partager-log").hidden = !peutPartagerFichiers();
+  $("version").textContent = "Version " + VERSION;
+}
+$("form-email").addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  var v = $("email").value.trim();
+  if (v && !RE_EMAIL.test(v)) { $("email-etat").textContent = "Cette adresse ne semble pas valide. Vérifiez-la (exemple : nom@exemple.fr)."; $("email").focus(); return; }
+  /* champ vide : on revient a l'adresse par defaut */
+  prefs.email = v || EMAIL_DEFAUT; DB.prefs = prefs; sauver(); log("email_regle", { defaut: prefs.email === EMAIL_DEFAUT });
+  majDiag(); $("email-etat").textContent = v ? "Adresse enregistrée. Le journal sera envoyé à " + v + "." : "Adresse par défaut rétablie : " + EMAIL_DEFAUT + ".";
+});
+$("diag").addEventListener("toggle", function () { if (this.open) { majDiag(); preparerPhotoJointe(); } });
+$("mail-lien").addEventListener("click", function (ev) {
+  if (!prefs.email) { ev.preventDefault(); $("email-etat").textContent = "Enregistrez d'abord l'adresse de destination."; $("email").focus(); return; }
+  majDiag(); log("envoi_mail", { entrees: J.length });
+  var sc = $("secours"); sc.hidden = false;
+  sc.innerHTML = "Si votre messagerie ne s'ouvre pas, touchez « Copier le journal » puis collez-le dans un e-mail à <code></code>.";
+  sc.querySelector("code").textContent = prefs.email;
+});
+$("partager-log").onclick = function () {
+  var fichiers = [new File([texteJournal()], "journal-cible10m-" + new Date().toISOString().slice(0, 10) + ".txt", { type: "text/plain" })];
+  if ($("joindre-photo").checked && blobPhoto) fichiers.push(new File([blobPhoto], "derniere-photo.jpg", { type: "image/jpeg" }));
+  log("envoi_fichier", { entrees: J.length, photo: fichiers.length > 1 });
+  navigator.share({ files: fichiers, title: "Journal Cible 10 m", text: "Journal de diagnostic Cible 10 m" + (prefs.email ? " — à envoyer à " + prefs.email : "") })
+    .catch(function (e) {
+      if (e && e.name === "AbortError") return;
+      $("email-etat").textContent = "Le partage de fichier n'est pas disponible ici. Utilisez « Envoyer par e-mail » ou « Copier le journal ».";
+    });
+};
+$("copier-log").onclick = async function () {
+  try { await navigator.clipboard.writeText(texteJournal()); toast("Journal copié"); }
+  catch (e) { $("email-etat").textContent = "La copie n'est pas possible ici. Utilisez « Envoyer par e-mail »."; }
+};
+$("effacer-log").onclick = function () {
+  var sauvegarde = J.slice(); J.length = 0; sauverJournal(); majDiag();
+  toast("Journal effacé", function () { J = sauvegarde.concat(J); sauverJournal(); majDiag(); });
+};
+$("signaler").onclick = function () {
+  log("signalement", { phase: S ? S.phase : null, tirs: S ? S.rec.impacts.length : 0, message: $("msg").textContent.slice(0, 200) });
+  quitter();
+  var d = $("diag"); d.open = true; majDiag();
+  setTimeout(function () { d.scrollIntoView({ block: "start" }); (prefs.email ? $("mail-lien") : $("email")).focus(); }, 50);
+};
+log("demarrage", { version: VERSION });
+majAccueil();
+proposerReprise();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Systeme
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editeurs
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sorties du script d'analyse et photos de test
+resultat*.png
+resultat*.json
+photos/
